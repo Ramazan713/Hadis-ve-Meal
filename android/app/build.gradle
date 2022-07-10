@@ -21,6 +21,12 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def admobAppId = localProperties.getProperty('ADMOB_APPLICATION_ID')
+if (admobAppId == null) {
+    throw new GradleException("Flutter ADMOB_APPLICATOIN_ID not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
@@ -57,6 +63,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode 4
         versionName flutterVersionName
+        manifestPlaceholders  += [ADMOB_APPLICATION_ID: admobAppId]
     }
 
     signingConfigs {

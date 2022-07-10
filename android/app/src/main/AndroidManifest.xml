@@ -37,7 +37,7 @@
 
        <meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
-           android:value="---APPLICATION_ID needed---"/>
+           android:value="${ADMOB_APPLICATION_ID}"/>
 
 
        <meta-data

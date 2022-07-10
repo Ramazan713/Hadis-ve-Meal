@@ -20,14 +20,14 @@ Future<void> main() async {
 
     MobileAds.instance.initialize();
 
-    FlutterError.onError =
-        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // FlutterError.onError =
+    //     FirebaseCrashlytics.instance.recordFlutterFatalError;
 
     runApp(MyApp(
       appDatabase: database,
     ));
   }, (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    // FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
   });
 
 }

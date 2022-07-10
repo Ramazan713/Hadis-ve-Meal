@@ -49,4 +49,7 @@ app.*.map.json
 
 
 /lib/firebase_options.dart
-/assets/app_icon.png
+/assets/images/
+/assets/hadithDb.db
+/assets/fonts
+

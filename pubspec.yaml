@@ -65,12 +65,12 @@ dev_dependencies:
 
 flutter_native_splash:
   color: "#ffffff"
-  image: assets/app_icon.png
+  image: assets/images/app_icon.png
   color_dark: "#121212"
   android: true
   ios: true
   android_12:
-    image: assets/app_icon.png
+    image: assets/images/app_icon.png
     icon_background_color: "#ffffff"
     icon_background_color_dark: "#121212"
 
@@ -79,11 +79,18 @@ flutter_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/app_icon.png"
+  image_path: "assets/images/app_icon.png"
 
 
 flutter:
   uses-material-design: true
 
+  fonts:
+    - family: ScheherazadeNew
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+
   assets:
     - assets/hadithDb.db
+    - assets/images/verse_stop.png
+
