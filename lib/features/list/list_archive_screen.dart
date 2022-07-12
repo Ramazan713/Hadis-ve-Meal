@@ -69,6 +69,7 @@ class ListArchiveScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Icon(
                 Icons.library_add_check_outlined,
@@ -80,6 +81,7 @@ class ListArchiveScreen extends StatelessWidget {
               Text(
                 "Arşiv'e listeler ekleyebilirsiniz",
                 style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
               )
             ],
           ),

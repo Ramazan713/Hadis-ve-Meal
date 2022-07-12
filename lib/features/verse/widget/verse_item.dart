@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
 import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
-import 'package:hadith/db/entities/verse_arabic.dart';
 import 'package:hadith/features/verse/verse_helper_funcs.dart';
 import 'package:hadith/utils/text_utils.dart';
-import 'package:hadith/constants/verse_constant.dart';
 import 'package:hadith/db/entities/verse.dart';
-import 'package:hadith/dialogs/show_info_bottom_dia.dart';
 import 'package:hadith/features/verse/model/verse_model.dart';
 
 class VerseItem extends StatelessWidget {

@@ -6,6 +6,7 @@ import 'package:hadith/bloc/visibility_bloc/visibility_bloc.dart';
 import 'package:hadith/bloc/visibility_bloc/visibility_state.dart';
 import 'package:hadith/constants/enums/data_paging_status_enum.dart';
 import 'package:hadith/constants/enums/data_status_enum.dart';
+import 'package:hadith/constants/enums/font_size_enum.dart';
 import 'package:hadith/constants/enums/sourcetype_enum.dart';
 import 'package:hadith/constants/favori_list.dart';
 import 'package:hadith/constants/menu_resources.dart';
@@ -52,7 +53,7 @@ class _HadithPageScrollableState extends DisplayPageState<HadithPageScrollable> 
     switch (selected) {
       case MenuResources.fontSize:
         showSelectFontSizeBottomDia(context, listener: (fontSize) {
-          customPagingController.setFontSizeEvent(fontSize);
+          customPagingController.setFontSizeEvent(fontSize.size);
         });
         break;
       case MenuResources.savePoint:

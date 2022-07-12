@@ -51,14 +51,17 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   User? user;
-  SearchCriteriaEnum selectedCriteria=SearchCriteriaEnum.oneExpression;
-  ThemeTypesEnum selectedThemeEnum=ThemeTypesEnum.system;
-  ArabicVerseUIEnum selectedArabicUI=ArabicVerseUIEnum.both;
+  late ValueNotifier<SearchCriteriaEnum>notifierSearchCriteria;
+  late ValueNotifier<ArabicVerseUIEnum>notifierArabicUI;
 
-  bool useArchiveListFeatures=false;
+  late ValueNotifier<bool>notifierUseArchiveListFeature;
+  late ValueNotifier<String>notifierFontText;
+
+  late ThemeTypesEnum selectedThemeType;
+
   final SharedPreferences sharedPreferences=LocalStorage.sharedPreferences;
   
-  String selectedFontText="";
+
 
   final AuthService authService=AuthService();
   late CloudBackupManager cloudBackupManager;
@@ -82,6 +85,14 @@ class _SettingScreenState extends State<SettingScreen> {
   void initState() {
     listenAuth();
     super.initState();
+    notifierSearchCriteria=ValueNotifier(SearchCriteriaHelper.getCriteria());
+    notifierArabicUI=ValueNotifier(ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key) ??
+        PrefConstants.arabicVerseAppearanceEnum.defaultValue]);
+
+    notifierUseArchiveListFeature=ValueNotifier(sharedPreferences.getBool(PrefConstants.useArchiveListFeatures.key) ??
+        PrefConstants.useArchiveListFeatures.defaultValue);
+    notifierFontText=ValueNotifier(FontSize.values[sharedPreferences.getInt(PrefConstants.fontSize.key) ??
+        PrefConstants.fontSize.defaultValue].shortName);
   }
 
   Future _logOut(UserInfoBloc userInfoBloc )async{
@@ -145,19 +156,13 @@ class _SettingScreenState extends State<SettingScreen> {
   Widget build(BuildContext context) {
     final userInfoBloc=context.read<UserInfoBloc>();
 
-    selectedCriteria=SearchCriteriaHelper.getCriteria();
-    selectedThemeEnum=ThemeUtil.getThemeEnum();
-    selectedArabicUI=ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key)
-        ??PrefConstants.arabicVerseAppearanceEnum.defaultValue];
-
+    selectedThemeType=ThemeUtil.getThemeEnum();
     cloudBackupManager=CloudBackupManager(context: context);
-    selectedFontText=FontSize.values[sharedPreferences.getInt(PrefConstants.fontSize.key) ?? 2].shortName;
-
-    useArchiveListFeatures=sharedPreferences.getBool(PrefConstants.useArchiveListFeatures.key)??false;
 
     if(user!=null){
       userInfoBloc.add(UserInfoEventRequest(userId: user!.uid));
     }
+
 
     return Scaffold(
 
@@ -233,58 +238,81 @@ class _SettingScreenState extends State<SettingScreen> {
                       title: const Text('Genel Ayarlar'),
                       tiles: [
                         SettingsTile(title: const Text("Tema Modu"),onPressed: (context)async{
-                          final currentValue=ItemLabelModel(item: selectedThemeEnum,label: selectedThemeEnum.getDescription());
+                          final currentValue=ItemLabelModel(item: selectedThemeType,label: selectedThemeType.getDescription());
                           final List<ItemLabelModel<ThemeTypesEnum>> radioItems=
                           ThemeTypesEnum.values.map((e) => ItemLabelModel(item: e,label:e.getDescription())).toList();
                           showSelectRadioEnums<ThemeTypesEnum>(context,
                               currentValue: currentValue,
                               radioItems: radioItems, closeListener: (lastSelected)async{
-                                selectedThemeEnum=lastSelected.item;
-                                context.read<ThemeBloc>().add(ThemeEventChangeTheme(themeEnum: selectedThemeEnum));
-                                setState(() {});
-                              });
-
-                        },value: Text(selectedThemeEnum.getDescription()),
-                          leading: const Icon(Icons.palette),),
-
-                        SettingsTile(title: const Text("Arama Kriteri"),onPressed: (context)async{
-                          final currentValue=ItemLabelModel(item: selectedCriteria,label: selectedCriteria.getDescription());
-                          final List<ItemLabelModel<SearchCriteriaEnum>> radioItems=
-                          SearchCriteriaEnum.values.map((e) => ItemLabelModel(item: e,label:e.getDescription())).toList();
-                          showSelectRadioEnums<SearchCriteriaEnum>(context,
-                              currentValue: currentValue,
-                              radioItems: radioItems, closeListener: (lastSelected)async{
-                                selectedCriteria=lastSelected.item;
-                                await sharedPreferences.setInt(PrefConstants.searchCriteriaEnum.key, lastSelected.item.index);
-                                setState(() {});
-                              });
-                        },
-                          value: Text(selectedCriteria.getDescription()),
-                          leading: const Icon(Icons.search),
-                        ),
-                        SettingsTile(
-                          leading: const Icon(Icons.font_download),
-                          title: const Text("Yazı Boyutu"),
-                          onPressed: (context){
-                            showSelectFontSizeBottomDia(context, listener: (selected){
-                                  setState(() {});
-                            });
-                          },
-                          value: Text(selectedFontText),
-                        ),
-                        SettingsTile(title: const Text("Ayetler Görünüm"),onPressed: (context){
-                          showSelectRadioEnums<ArabicVerseUIEnum>(context, currentValue:  ItemLabelModel(item: selectedArabicUI, label: selectedArabicUI.description),
-                              radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
-                              closeListener: (selected)async{
-                                if(selected.item!=selectedArabicUI){
-                                  selectedArabicUI=selected.item;
-                                  await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
-                                  setState(() {});
+                                if(lastSelected.item!=selectedThemeType){
+                                  context.read<ThemeBloc>().add(ThemeEventChangeTheme(themeEnum: lastSelected.item));
+                                  setState((){
+                                    selectedThemeType=lastSelected.item;
+                                  });
                                 }
                               });
-                        },leading: const Icon(FontAwesomeIcons.bookQuran),
-                        value: Text(selectedArabicUI.description),)
 
+                        },value: Text(selectedThemeType.getDescription()),
+                          leading: const Icon(Icons.palette),),
+
+                        CustomSettingsTile(
+                            child:  ValueListenableBuilder<SearchCriteriaEnum>(
+                                valueListenable: notifierSearchCriteria,
+                                builder: (context,selectedCriteria,child){
+                                  return  SettingsTile(title: const Text("Arama Kriteri"),onPressed: (context)async{
+                                    final currentValue=ItemLabelModel(item: selectedCriteria,label: selectedCriteria.getDescription());
+                                    final List<ItemLabelModel<SearchCriteriaEnum>> radioItems=
+                                    SearchCriteriaEnum.values.map((e) => ItemLabelModel(item: e,label:e.getDescription())).toList();
+                                    showSelectRadioEnums<SearchCriteriaEnum>(context,
+                                        currentValue: currentValue,
+                                        radioItems: radioItems, closeListener: (lastSelected)async{
+                                          await sharedPreferences.setInt(PrefConstants.searchCriteriaEnum.key, lastSelected.item.index);
+                                          notifierSearchCriteria.value=lastSelected.item;
+                                        });
+                                  },
+                                    value: Text(selectedCriteria.getDescription()),
+                                    leading: const Icon(Icons.search),
+                                  );
+                                }
+                            )
+                        ),
+                        CustomSettingsTile(
+                          child:  ValueListenableBuilder<String>(
+                              valueListenable: notifierFontText,
+                              builder: (context,selectedFontText,child){
+                                return SettingsTile(
+                                  leading: const Icon(Icons.font_download),
+                                  title: const Text("Yazı Boyutu"),
+                                  onPressed: (context){
+                                    showSelectFontSizeBottomDia(context, listener: (selected){
+                                      notifierFontText.value=selected.shortName;
+                                    });
+                                  },
+                                  value: Text(selectedFontText),
+                                );
+                              }
+                          ),
+                        ),
+
+                        CustomSettingsTile(
+                          child:  ValueListenableBuilder<ArabicVerseUIEnum>(
+                              valueListenable: notifierArabicUI,
+                              builder: (context,selectedArabicUI,child){
+                                return SettingsTile(title: const Text("Ayetler Görünüm"),onPressed: (context){
+                                  showSelectRadioEnums<ArabicVerseUIEnum>(context,
+                                      currentValue:  ItemLabelModel(item: selectedArabicUI, label: selectedArabicUI.description),
+                                      radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
+                                      closeListener: (selected)async{
+                                        if(selected.item!=selectedArabicUI){
+                                          await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
+                                          notifierArabicUI.value=selected.item;
+                                        }
+                                      });
+                                },leading: const Icon(FontAwesomeIcons.bookQuran),
+                                  value: Text(selectedArabicUI.description),);
+                              }
+                          ),
+                        ),
                       ],
                     ),
 
@@ -345,20 +373,29 @@ class _SettingScreenState extends State<SettingScreen> {
                     SettingsSection(
                       title: const Text("Gelişmiş Ayarlar"),
                       tiles: [
-                        SettingsTile.switchTile(
-                            initialValue: useArchiveListFeatures,
-                            onToggle: (newValue)async{
-                              await sharedPreferences.setBool(PrefConstants.useArchiveListFeatures.key,newValue);
-                              setState(() {
-                                  useArchiveListFeatures=newValue;
-                                });
-                            }
-                            , title: const Text("Arşivdeki listeleri, liste seçmede ve eklemede kullan"),
+
+                        CustomSettingsTile(
+                          child:  ValueListenableBuilder<bool>(
+                              valueListenable: notifierUseArchiveListFeature,
+                              builder: (context,useArchiveListFeatures,child){
+                                return  SettingsTile.switchTile(
+                                  initialValue: useArchiveListFeatures,
+                                  onToggle: (newValue)async{
+                                    await sharedPreferences.setBool(PrefConstants.useArchiveListFeatures.key,newValue);
+                                    notifierUseArchiveListFeature.value=newValue;
+                                  }
+                                  , title: const Text("Arşivdeki listeleri, liste seçmede ve eklemede kullan"),
+                                );
+                              }
+                          ),
                         ),
+
+
                         SettingsTile(title: const Text("Varsayılan ayarlara dön"),onPressed: (context){
                             showCustomAlertBottomDia(context,title: "Varsayılan ayarlara dönmek istediğinize emin misiniz?",
                             btnApproved: ()async{
                               await PrefConstants.setDefaultValues();
+                              context.read<ThemeBloc>().add(ThemeEventChangeTheme(themeEnum: ThemeUtil.getThemeEnum()));
                               setState(() {});
                             });
                         },leading: const Icon(Icons.settings_backup_restore),),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hadith/constants/enums/data_paging_status_enum.dart';
 import 'package:hadith/constants/enums/data_status_enum.dart';
+import 'package:hadith/constants/enums/font_size_enum.dart';
 import 'package:hadith/constants/enums/origin_tag_enum.dart';
 import 'package:hadith/constants/enums/sourcetype_enum.dart';
 import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
@@ -78,7 +79,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
     switch (selected) {
       case MenuResources.fontSize:
         showSelectFontSizeBottomDia(context, listener: (fontSize) {
-          customPagingController.setFontSizeEvent(fontSize);
+          customPagingController.setFontSizeEvent(fontSize.size);
         });
         break;
       case MenuResources.savePoint:

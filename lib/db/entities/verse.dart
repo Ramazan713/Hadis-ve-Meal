@@ -30,12 +30,12 @@ class Verse extends IHadithVerse{
   final String content;
   final bool isProstrationVerse;
 
-  int? pageRank;
-  String? surahName;
+  final int? pageRank;
+  final String? surahName;
 
 
 
-  Verse({required this.surahId,required this.cuzNo,required this.pageNo,
+  const Verse({required this.surahId,required this.cuzNo,required this.pageNo,
   required this.verseNumber,required this.content,required this.pageRank,
     required this.surahName,required this.isProstrationVerse,int? id,int? rowNumber,
     required int bookId}):super(id: id,rowNumber: rowNumber,bookId: bookId);

@@ -98,10 +98,7 @@ class _HadithScrollableItemState extends State<HadithScrollableItem> {
                 Expanded(
                   child: Text("- $topicText",
                       textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText1
-                          ?.copyWith(fontSize: widget.fontSize - 4)),
+                      style:textStyle?.copyWith(fontSize: widget.fontSize - 4)),
                 ),
                 const SizedBox(width: 33,)
               ],
@@ -120,8 +117,7 @@ class _HadithScrollableItemState extends State<HadithScrollableItem> {
             ),
             Text("- ${hadith.source}",
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyText1
-                    ?.copyWith(fontSize: widget.fontSize - 4)),
+                style: textStyle?.copyWith(fontSize: widget.fontSize - 4)),
             const SizedBox(
               height: 5,
             ),

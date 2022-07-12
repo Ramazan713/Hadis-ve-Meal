@@ -6,7 +6,7 @@ import 'package:hadith/constants/preference_constants.dart';
 import 'package:hadith/utils/localstorage.dart';
 
 Future<void> showSelectFontSizeBottomDia(BuildContext context,
-    {required void Function(double selectedFontSize) listener}) async {
+    {required void Function(FontSize selectedFontSize) listener}) async {
   final sharedPreferences = LocalStorage.sharedPreferences;
 
   showModalBottomSheet(
@@ -18,8 +18,9 @@ Future<void> showSelectFontSizeBottomDia(BuildContext context,
 
         void getSelectedRadio(FontSize fontSize) {
           radioNotifier.value = fontSize;
+
           sharedPreferences.setInt(PrefConstants.fontSize.key, fontSize.index);
-          listener.call(fontSize.size);
+          listener.call(fontSize);
         }
 
         return SingleChildScrollView(

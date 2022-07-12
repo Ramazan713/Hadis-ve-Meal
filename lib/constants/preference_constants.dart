@@ -11,6 +11,7 @@ import '../models/key_type_model.dart';
 import 'enums/scope_filter_enum.dart';
 
 class PrefConstants{
+
   static KeyTypeModel fontSize=KeyTypeModel<int>( key: "fontSize",defaultValue: FontSize.medium.index);
   static KeyTypeModel searchCriteriaEnum=KeyTypeModel<int>( key: "searchCriteriaEnum",defaultValue: SearchCriteriaEnum.multipleKeys.index);
   static KeyTypeModel scopeFilterEnum=KeyTypeModel<int>(key: "scopeFilterEnum",defaultValue: ScopeFilterEnum.scope.index);

@@ -9,7 +9,7 @@ import 'package:hadith/features/backup/user_info/bloc/user_info_state.dart';
 class UserInfoBloc extends Bloc<IUserInfoEvent,UserInfoState>{
   final UserInfoRepo userInfoRepo;
   UserInfoBloc({required this.userInfoRepo}) : super(const UserInfoState(status: DataStatus.initial)){
-    on<UserInfoEventRequest>(_onRequestData,transformer: restartable());
+    on<UserInfoEventRequest>(_onRequestData,transformer: droppable());
     on<UserInfoEventDelete>(_onDeleteAll,transformer: restartable());
     on<UserInfoEventInsert>(_onInsertData,transformer: restartable());
   }
