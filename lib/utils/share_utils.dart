@@ -25,6 +25,7 @@ class ShareUtils{
 
   static void _errorHandlingWithLoading(BuildContext context,Future<void> Function() function)async{
     try{
+
       LoadingUtil.requestLoading(context);
       await function.call();
     }catch(e){

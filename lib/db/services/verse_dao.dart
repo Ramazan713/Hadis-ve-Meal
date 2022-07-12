@@ -1,6 +1,7 @@
 import 'package:floor/floor.dart';
 import 'package:hadith/db/entities/helper/int_data.dart';
 import 'package:hadith/db/entities/verse.dart';
+import 'package:hadith/db/entities/verse_arabic.dart';
 
 
 @dao
@@ -95,6 +96,9 @@ abstract class VerseDao{
       limit :limit offset :limit * ((:page) -1)""")
   Future<List<Verse>>getPagingSearchVerses(int limit,int page,String query);
 
+
+  @Query("""select * from verseArabic where mealId=:mealId""")
+  Future<List<VerseArabic>>getArabicVersesWithId(int mealId);
 
 
 

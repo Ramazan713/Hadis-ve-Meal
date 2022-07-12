@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hadith/db/entities/helper/int_data.dart';
 import 'package:hadith/db/entities/verse.dart';
+import 'package:hadith/db/entities/verse_arabic.dart';
 import 'package:hadith/db/repos/list_repo.dart';
 import 'package:hadith/db/repos/verse_repo.dart';
 import 'package:hadith/features/verse/model/verse_model.dart';
@@ -41,6 +42,11 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
     return listItems.isNotEmpty;
   }
 
+  Future<List<VerseArabic>>_getArabicVerses(Verse verse)async{
+    final verses=await verseRepo.getArabicVersesWithId(verse.id??0);
+    return verses;
+  }
+
   Future<bool>_isVerseAddListNotEmpty(Verse verse)async{
     final useArchiveListFeatures=_sharedPreferences.getBool(PrefConstants.useArchiveListFeatures.key)??false;
 
@@ -57,7 +63,8 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
     for(var verse in verses){
       final isFavorite=await _isVerseFavorite(verse);
       final isAddListNotEmpty=await _isVerseAddListNotEmpty(verse);
-      verseModels.add(VerseModel(item: verse,
+      final arabicVerses = await _getArabicVerses(verse);
+      verseModels.add(VerseModel(item: verse,arabicVerses: arabicVerses,
           isFavorite: isFavorite, isAddListNotEmpty: isAddListNotEmpty));
     }
     return Future.value(verseModels);

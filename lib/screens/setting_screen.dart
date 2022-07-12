@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hadith/constants/enums/data_status_enum.dart';
+import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
 import 'package:hadith/dialogs/show_alert_bottom_dia_multiple_button.dart';
 import 'package:hadith/dialogs/show_select_font_size_bottom_dia.dart';
 import 'package:hadith/features/backup/cloud_backup_manager.dart';
@@ -52,6 +53,8 @@ class _SettingScreenState extends State<SettingScreen> {
   User? user;
   SearchCriteriaEnum selectedCriteria=SearchCriteriaEnum.oneExpression;
   ThemeTypesEnum selectedThemeEnum=ThemeTypesEnum.system;
+  ArabicVerseUIEnum selectedArabicUI=ArabicVerseUIEnum.both;
+
   bool useArchiveListFeatures=false;
   final SharedPreferences sharedPreferences=LocalStorage.sharedPreferences;
   
@@ -144,6 +147,8 @@ class _SettingScreenState extends State<SettingScreen> {
 
     selectedCriteria=SearchCriteriaHelper.getCriteria();
     selectedThemeEnum=ThemeUtil.getThemeEnum();
+    selectedArabicUI=ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key)
+        ??PrefConstants.arabicVerseAppearanceEnum.defaultValue];
 
     cloudBackupManager=CloudBackupManager(context: context);
     selectedFontText=FontSize.values[sharedPreferences.getInt(PrefConstants.fontSize.key) ?? 2].shortName;
@@ -266,7 +271,19 @@ class _SettingScreenState extends State<SettingScreen> {
                             });
                           },
                           value: Text(selectedFontText),
-                        )
+                        ),
+                        SettingsTile(title: const Text("Ayetler Görünüm"),onPressed: (context){
+                          showSelectRadioEnums<ArabicVerseUIEnum>(context, currentValue:  ItemLabelModel(item: selectedArabicUI, label: selectedArabicUI.description),
+                              radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
+                              closeListener: (selected)async{
+                                if(selected.item!=selectedArabicUI){
+                                  selectedArabicUI=selected.item;
+                                  await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
+                                  setState(() {});
+                                }
+                              });
+                        },leading: const Icon(FontAwesomeIcons.bookQuran),
+                        value: Text(selectedArabicUI.description),)
 
                       ],
                     ),

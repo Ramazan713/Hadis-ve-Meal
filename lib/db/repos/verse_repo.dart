@@ -2,6 +2,7 @@
 
 import 'package:hadith/db/entities/helper/int_data.dart';
 import 'package:hadith/db/entities/verse.dart';
+import 'package:hadith/db/entities/verse_arabic.dart';
 import 'package:hadith/db/services/verse_dao.dart';
 
 class VerseRepo{
@@ -66,5 +67,8 @@ class VerseRepo{
 
   Future<List<Verse>>getPagingSearchVerses(int limit,int page,String query)=>
       verseDao.getPagingSearchVerses(limit, page, "%$query%");
+
+  Future<List<VerseArabic>>getArabicVersesWithId(int mealId)=>
+      verseDao.getArabicVersesWithId(mealId);
 
 }

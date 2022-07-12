@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hadith/constants/enums/data_paging_status_enum.dart';
 import 'package:hadith/constants/enums/data_status_enum.dart';
+import 'package:hadith/constants/enums/origin_tag_enum.dart';
 import 'package:hadith/constants/enums/sourcetype_enum.dart';
+import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
 import 'package:hadith/constants/enums/verse_edit_enum.dart';
 import 'package:hadith/constants/favori_list.dart';
 import 'package:hadith/constants/menu_resources.dart';
+import 'package:hadith/constants/preference_constants.dart';
 import 'package:hadith/dialogs/show_get_number_bottom_dia.dart';
 import 'package:hadith/dialogs/show_select_font_size_bottom_dia.dart';
+import 'package:hadith/dialogs/show_select_radio_enums.dart';
 import 'package:hadith/features/verse/verse_bottom_menu.dart';
 import 'package:hadith/features/add_to_list/model/edit_select_list_model.dart';
 import 'package:hadith/features/add_to_list/bloc/list_bloc.dart';
@@ -18,6 +22,8 @@ import 'package:hadith/features/paging/paging_argument.dart';
 import 'package:hadith/features/save_point/bloc/save_point_bloc.dart';
 import 'package:hadith/features/save_point/bloc/save_point_state.dart';
 import 'package:hadith/features/save_point/show_select_savepoint_bottom_dia.dart';
+import 'package:hadith/models/item_label_model.dart';
+import 'package:hadith/utils/localstorage.dart';
 import 'package:hadith/utils/share_utils.dart';
 import 'package:hadith/features/share/show_preview_share_image_dia.dart';
 import 'package:hadith/features/share/show_share_alert_dialog.dart';
@@ -27,9 +33,13 @@ import 'package:hadith/models/shimmer/shimmer_widgets.dart';
 import 'package:hadith/widgets/custom_sliver_appbar.dart';
 import 'package:hadith/widgets/custom_sliver_nested_scrollview.dart';
 import 'package:hadith/widgets/menu_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_constants.dart';
 import '../paging/widgets/custom_scrolling_paging.dart';
 import 'model/verse_model.dart';
+
+
+
 
 class VerseScreen extends StatefulWidget {
   static const id = "VerseScreen";
@@ -41,6 +51,16 @@ class VerseScreen extends StatefulWidget {
 
 class _VerseScreenState extends DisplayPageState<VerseScreen> {
 
+  final SharedPreferences sharedPreferences=LocalStorage.sharedPreferences;
+
+  ArabicVerseUIEnum lastSelectedArabicUI=ArabicVerseUIEnum.both;
+
+  @override
+  void initState() {
+    super.initState();
+    lastSelectedArabicUI=ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key)
+        ??PrefConstants.arabicVerseAppearanceEnum.defaultValue];
+  }
 
   void _showSavePointBottomDia(int itemIndex){
     showSelectSavePointBottomDia(context,
@@ -79,9 +99,9 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
             final shareVerse =
                 ShareUtils.shareImageExecutor(context, SourceTypeEnum.verse);
             showPreviewSharedImageDia(context,
-                previewWidget: shareVerse.getPreviewWidget(context, item.item),
+                previewWidget: shareVerse.getPreviewWidget(context, item),
                 onTap: () {
-              shareVerse.snapshot(context, item.item);
+              shareVerse.snapshot(context, item);
             });
           },
           iconData: Icons.image),
@@ -143,6 +163,13 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
 
   @override
   Widget buildPage(BuildContext context) {
+
+
+    if(pagingArgument.originTag==OriginTag.search&&
+        lastSelectedArabicUI==ArabicVerseUIEnum.onlyArabic){
+      lastSelectedArabicUI=ArabicVerseUIEnum.onlyMeal;
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: kResizeToAvoidBottomInset,
         backgroundColor: Theme.of(context).primaryColor,
@@ -162,6 +189,19 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                     },
                   ),
                   actions: [
+                    IconButton(onPressed: (){
+
+                      showSelectRadioEnums<ArabicVerseUIEnum>(context, currentValue:  ItemLabelModel(item: lastSelectedArabicUI, label: lastSelectedArabicUI.description),
+                          radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
+                          closeListener: (selected)async{
+                            if(selected.item!=lastSelectedArabicUI){
+                              lastSelectedArabicUI=selected.item;
+                              await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
+                              rebuildItems();
+                            }
+
+                          });
+                    }, icon: const Icon(Icons.view_agenda),tooltip: "Görünümü Değiştir",),
                     IconButton(
                         onPressed: () {
                           showGetNumberBottomDia(context, (selected) {
@@ -207,6 +247,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                           valueListenable: rebuildItemNotifier,
                           builder: (context, value, child) {
                             return VerseItem(
+                              arabicVerseUIEnum: lastSelectedArabicUI,
                               verseModel: item,
                               searchKey: cleanableSearchText,
                               fontSize: state.fontSize,

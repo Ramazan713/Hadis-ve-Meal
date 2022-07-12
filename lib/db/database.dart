@@ -11,6 +11,7 @@ import 'package:hadith/db/entities/savepoint.dart';
 import 'package:hadith/db/entities/savepoint_type_entity.dart';
 import 'package:hadith/db/entities/topic_savepoint_entity.dart';
 import 'package:hadith/db/entities/user_info_entity.dart';
+import 'package:hadith/db/entities/verse_arabic.dart';
 import 'package:hadith/db/entities/views/i_list_view.dart';
 import 'package:hadith/db/services/backup_dao.dart';
 import 'package:hadith/db/services/backup_meta_dao.dart';
@@ -45,10 +46,11 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 
 part 'database.g.dart';
+
 @TypeConverters([OriginTagConverter,TopicSavePointConverter])
-@Database(version: 1,
+@Database(version: 2,
     entities: [Hadith,Cuz,Surah,Topic,Verse,Section,IntData,SavePoint,SavePointTypeEntity,
-      BackupMeta,TopicSavePointEntity,HistoryEntity,UserInfoEntity,IListView,
+      BackupMeta,TopicSavePointEntity,HistoryEntity,UserInfoEntity,IListView,VerseArabic,
       ListEntity,SourceTypeEntity,ItemCountModel,VerseTopic,ListHadithEntity,ListVerseEntity,HadithTopic,Book],
     views: [ListVerseView,ListHadithView])
 abstract class AppDatabase extends FloorDatabase{

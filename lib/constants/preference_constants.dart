@@ -3,6 +3,7 @@
 import 'package:hadith/constants/enums/font_size_enum.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
 import 'package:hadith/constants/enums/theme_enum.dart';
+import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
 import 'package:hadith/utils/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,9 +18,12 @@ class PrefConstants{
   static KeyTypeModel counterBackupDate=const KeyTypeModel<String>( key: "counterBackupDate",defaultValue: "");
   static KeyTypeModel useArchiveListFeatures=const KeyTypeModel<bool>(key: "useArchiveListFeatures",defaultValue: false);
   static KeyTypeModel showDownloadDiaInLogin=const KeyTypeModel<bool>(key: "showDownloadDiaInLogin", defaultValue: true);
+  static KeyTypeModel arabicVerseAppearanceEnum=KeyTypeModel<int>(key: "arabicVerseAppearanceEnum", defaultValue: ArabicVerseUIEnum.both.index);
+
+
 
   static List<KeyTypeModel>values()=>[fontSize,searchCriteriaEnum,useArchiveListFeatures,
-    scopeFilterEnum,themeTypeEnum,counterBackupDate,showDownloadDiaInLogin];
+    scopeFilterEnum,themeTypeEnum,counterBackupDate,showDownloadDiaInLogin,arabicVerseAppearanceEnum];
 
 
   static Future<void>setDefaultValues()async{

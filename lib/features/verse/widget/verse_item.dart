@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
+import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
+import 'package:hadith/db/entities/verse_arabic.dart';
+import 'package:hadith/features/verse/verse_helper_funcs.dart';
 import 'package:hadith/utils/text_utils.dart';
 import 'package:hadith/constants/verse_constant.dart';
 import 'package:hadith/db/entities/verse.dart';
@@ -14,6 +17,7 @@ class VerseItem extends StatelessWidget {
   final bool showRowNumber;
   final String? searchKey;
   final SearchCriteriaEnum searchCriteriaEnum;
+  final ArabicVerseUIEnum arabicVerseUIEnum;
 
   late final TextStyle? contentTextStyle;
 
@@ -21,6 +25,7 @@ class VerseItem extends StatelessWidget {
   VerseItem(
       {Key? key,
       required this.fontSize,
+        required this.arabicVerseUIEnum,
       required this.verseModel,
       this.showRowNumber = false,
       this.searchKey,
@@ -39,35 +44,12 @@ class VerseItem extends StatelessWidget {
     return const SizedBox();
   }
 
-  Widget getInfoWidget(BuildContext context) {
-    return verse.isProstrationVerse
-        ? IconButton(
-            onPressed: () {
-              showInfoBottomDia(context,
-                  title: "Uyarı", content: "Koyu renkli alan secde ayetidir");
-            },
-            icon: Icon(Icons.info, size: fontSize + 5))
-        : const SizedBox(height: 0,);
-  }
 
-  Widget getMentionWidget() {
-    var verseNum = int.parse(verse.verseNumber.split(",")[0]);
-    if (verseNum == 1 &&
-        !VerseConstant.mentionExclusiveIds.contains(verse.surahId)) {
-      return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 19),
-          child: Text(
-            VerseConstant.mentionText,
-            textAlign: TextAlign.start,
-            style: contentTextStyle?.copyWith(
-              fontSize:fontSize-3
-            ),
-          ));
-    }
-    return const SizedBox(
-      height: 0,
-    );
-  }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +58,8 @@ class VerseItem extends StatelessWidget {
         fontWeight:
             verse.isProstrationVerse ? FontWeight.w700 : FontWeight.normal,
         inherit: true);
+
+
 
     final content = TextUtils.getSelectedText(verse.content, searchKey,
         textStyle: contentTextStyle,
@@ -109,7 +93,7 @@ class VerseItem extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          getInfoWidget(context),
+                          getVerseItemInfoWidget(context,verse,fontSize),
                           Text("${verse.pageNo}",
                               textAlign: TextAlign.end,
                               style: Theme.of(context).textTheme.bodyText1
@@ -123,14 +107,7 @@ class VerseItem extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 7, bottom: 13),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        getMentionWidget(),
-                        RichText(
-                            text: TextSpan(
-                                text: "${verse.verseNumber} - ",
-                                children: content,
-                                style: contentTextStyle))
-                      ],
+                      children: getVerseItemContent(content,verseModel,fontSize,contentTextStyle,arabicVerseUIEnum),
                     )),
               ],
             ),

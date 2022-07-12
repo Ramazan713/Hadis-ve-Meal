@@ -132,6 +132,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `userInfo` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` TEXT NOT NULL, `img` BLOB)');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `verseArabic` (`mealId` INTEGER NOT NULL, `verse` TEXT NOT NULL, `verseNumber` TEXT NOT NULL, FOREIGN KEY (`mealId`) REFERENCES `verse` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, PRIMARY KEY (`mealId`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `list` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `isRemovable` INTEGER NOT NULL, `sourceId` INTEGER NOT NULL, `isArchive` INTEGER NOT NULL, `pos` INTEGER NOT NULL, FOREIGN KEY (`sourceId`) REFERENCES `sourceType` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `sourceType` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `sourceType` TEXT NOT NULL)');
@@ -451,98 +453,98 @@ class _$ListDao extends ListDao {
         _listEntityInsertionAdapter = InsertionAdapter(
             database,
             'list',
-            (ListEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'isRemovable': item.isRemovable ? 1 : 0,
-                  'sourceId': item.sourceId,
-                  'isArchive': item.isArchive ? 1 : 0,
-                  'pos': item.pos
-                },
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'isRemovable': item.isRemovable ? 1 : 0,
+              'sourceId': item.sourceId,
+              'isArchive': item.isArchive ? 1 : 0,
+              'pos': item.pos
+            },
             changeListener),
         _listHadithEntityInsertionAdapter = InsertionAdapter(
             database,
             'listHadith',
-            (ListHadithEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'hadithId': item.hadithId,
-                  'pos': item.pos
-                },
+                (ListHadithEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'hadithId': item.hadithId,
+              'pos': item.pos
+            },
             changeListener),
         _listVerseEntityInsertionAdapter = InsertionAdapter(
             database,
             'listVerse',
-            (ListVerseEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'verseId': item.verseId,
-                  'pos': item.pos
-                },
+                (ListVerseEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'verseId': item.verseId,
+              'pos': item.pos
+            },
             changeListener),
         _listEntityUpdateAdapter = UpdateAdapter(
             database,
             'list',
             ['id'],
-            (ListEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'isRemovable': item.isRemovable ? 1 : 0,
-                  'sourceId': item.sourceId,
-                  'isArchive': item.isArchive ? 1 : 0,
-                  'pos': item.pos
-                },
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'isRemovable': item.isRemovable ? 1 : 0,
+              'sourceId': item.sourceId,
+              'isArchive': item.isArchive ? 1 : 0,
+              'pos': item.pos
+            },
             changeListener),
         _listHadithEntityUpdateAdapter = UpdateAdapter(
             database,
             'listHadith',
             ['listId', 'hadithId'],
-            (ListHadithEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'hadithId': item.hadithId,
-                  'pos': item.pos
-                },
+                (ListHadithEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'hadithId': item.hadithId,
+              'pos': item.pos
+            },
             changeListener),
         _listVerseEntityUpdateAdapter = UpdateAdapter(
             database,
             'listVerse',
             ['listId', 'verseId'],
-            (ListVerseEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'verseId': item.verseId,
-                  'pos': item.pos
-                },
+                (ListVerseEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'verseId': item.verseId,
+              'pos': item.pos
+            },
             changeListener),
         _listEntityDeletionAdapter = DeletionAdapter(
             database,
             'list',
             ['id'],
-            (ListEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'isRemovable': item.isRemovable ? 1 : 0,
-                  'sourceId': item.sourceId,
-                  'isArchive': item.isArchive ? 1 : 0,
-                  'pos': item.pos
-                },
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'isRemovable': item.isRemovable ? 1 : 0,
+              'sourceId': item.sourceId,
+              'isArchive': item.isArchive ? 1 : 0,
+              'pos': item.pos
+            },
             changeListener),
         _listHadithEntityDeletionAdapter = DeletionAdapter(
             database,
             'listHadith',
             ['listId', 'hadithId'],
-            (ListHadithEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'hadithId': item.hadithId,
-                  'pos': item.pos
-                },
+                (ListHadithEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'hadithId': item.hadithId,
+              'pos': item.pos
+            },
             changeListener),
         _listVerseEntityDeletionAdapter = DeletionAdapter(
             database,
             'listVerse',
             ['listId', 'verseId'],
-            (ListVerseEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'verseId': item.verseId,
-                  'pos': item.pos
-                },
+                (ListVerseEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'verseId': item.verseId,
+              'pos': item.pos
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1144,6 +1146,16 @@ class _$VerseDao extends VerseDao {
         mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, query]);
   }
+
+  @override
+  Future<List<VerseArabic>> getArabicVersesWithId(int mealId) async {
+    return _queryAdapter.queryList('select * from verseArabic where mealId=?1',
+        mapper: (Map<String, Object?> row) => VerseArabic(
+            mealId: row['mealId'] as int,
+            verse: row['verse'] as String,
+            verseNumber: row['verseNumber'] as String),
+        arguments: [mealId]);
+  }
 }
 
 class _$TopicDao extends TopicDao {
@@ -1302,52 +1314,52 @@ class _$SavePointDao extends SavePointDao {
         _savePointInsertionAdapter = InsertionAdapter(
             database,
             'savePoint',
-            (SavePoint item) => <String, Object?>{
-                  'id': item.id,
-                  'itemIndexPos': item.itemIndexPos,
-                  'title': item.title,
-                  'isAuto': item.isAuto ? 1 : 0,
-                  'modifiedDate': item.modifiedDate,
-                  'savePointType':
-                      _originTagConverter.encode(item.savePointType),
-                  'bookIdBinary': item.bookIdBinary,
-                  'parentName': item.parentName,
-                  'parentKey': item.parentKey
-                },
+                (SavePoint item) => <String, Object?>{
+              'id': item.id,
+              'itemIndexPos': item.itemIndexPos,
+              'title': item.title,
+              'isAuto': item.isAuto ? 1 : 0,
+              'modifiedDate': item.modifiedDate,
+              'savePointType':
+              _originTagConverter.encode(item.savePointType),
+              'bookIdBinary': item.bookIdBinary,
+              'parentName': item.parentName,
+              'parentKey': item.parentKey
+            },
             changeListener),
         _savePointUpdateAdapter = UpdateAdapter(
             database,
             'savePoint',
             ['id'],
-            (SavePoint item) => <String, Object?>{
-                  'id': item.id,
-                  'itemIndexPos': item.itemIndexPos,
-                  'title': item.title,
-                  'isAuto': item.isAuto ? 1 : 0,
-                  'modifiedDate': item.modifiedDate,
-                  'savePointType':
-                      _originTagConverter.encode(item.savePointType),
-                  'bookIdBinary': item.bookIdBinary,
-                  'parentName': item.parentName,
-                  'parentKey': item.parentKey
-                },
+                (SavePoint item) => <String, Object?>{
+              'id': item.id,
+              'itemIndexPos': item.itemIndexPos,
+              'title': item.title,
+              'isAuto': item.isAuto ? 1 : 0,
+              'modifiedDate': item.modifiedDate,
+              'savePointType':
+              _originTagConverter.encode(item.savePointType),
+              'bookIdBinary': item.bookIdBinary,
+              'parentName': item.parentName,
+              'parentKey': item.parentKey
+            },
             changeListener),
         _savePointDeletionAdapter = DeletionAdapter(
             database,
             'savePoint',
             ['id'],
-            (SavePoint item) => <String, Object?>{
-                  'id': item.id,
-                  'itemIndexPos': item.itemIndexPos,
-                  'title': item.title,
-                  'isAuto': item.isAuto ? 1 : 0,
-                  'modifiedDate': item.modifiedDate,
-                  'savePointType':
-                      _originTagConverter.encode(item.savePointType),
-                  'bookIdBinary': item.bookIdBinary,
-                  'parentName': item.parentName,
-                  'parentKey': item.parentKey
-                },
+                (SavePoint item) => <String, Object?>{
+              'id': item.id,
+              'itemIndexPos': item.itemIndexPos,
+              'title': item.title,
+              'isAuto': item.isAuto ? 1 : 0,
+              'modifiedDate': item.modifiedDate,
+              'savePointType':
+              _originTagConverter.encode(item.savePointType),
+              'bookIdBinary': item.bookIdBinary,
+              'parentName': item.parentName,
+              'parentKey': item.parentKey
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1389,7 +1401,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1408,7 +1420,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1429,7 +1441,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1451,8 +1463,8 @@ class _$SavePointDao extends SavePointDao {
   Stream<List<SavePoint>> getStreamSavePointsWithBook(List<int> bookBinaryIds) {
     const offset = 1;
     final _sqliteVariablesForBookBinaryIds =
-        Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
-            .join(',');
+    Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
+        .join(',');
     return _queryAdapter.queryListStream(
         'select * from `savepoint` where bookIdBinary in(' +
             _sqliteVariablesForBookBinaryIds +
@@ -1464,7 +1476,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1478,8 +1490,8 @@ class _$SavePointDao extends SavePointDao {
       List<int> bookBinaryIds, int savePointType) {
     const offset = 2;
     final _sqliteVariablesForBookBinaryIds =
-        Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
-            .join(',');
+    Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
+        .join(',');
     return _queryAdapter.queryListStream(
         'select * from `savepoint` where bookIdBinary in(' +
             _sqliteVariablesForBookBinaryIds +
@@ -1491,7 +1503,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1532,34 +1544,34 @@ class _$TopicSavePointDao extends TopicSavePointDao {
         _topicSavePointEntityInsertionAdapter = InsertionAdapter(
             database,
             'topicSavePoint',
-            (TopicSavePointEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'pos': item.pos,
-                  'type': _topicSavePointConverter.encode(item.type),
-                  'parentKey': item.parentKey
-                },
+                (TopicSavePointEntity item) => <String, Object?>{
+              'id': item.id,
+              'pos': item.pos,
+              'type': _topicSavePointConverter.encode(item.type),
+              'parentKey': item.parentKey
+            },
             changeListener),
         _topicSavePointEntityUpdateAdapter = UpdateAdapter(
             database,
             'topicSavePoint',
             ['id'],
-            (TopicSavePointEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'pos': item.pos,
-                  'type': _topicSavePointConverter.encode(item.type),
-                  'parentKey': item.parentKey
-                },
+                (TopicSavePointEntity item) => <String, Object?>{
+              'id': item.id,
+              'pos': item.pos,
+              'type': _topicSavePointConverter.encode(item.type),
+              'parentKey': item.parentKey
+            },
             changeListener),
         _topicSavePointEntityDeletionAdapter = DeletionAdapter(
             database,
             'topicSavePoint',
             ['id'],
-            (TopicSavePointEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'pos': item.pos,
-                  'type': _topicSavePointConverter.encode(item.type),
-                  'parentKey': item.parentKey
-                },
+                (TopicSavePointEntity item) => <String, Object?>{
+              'id': item.id,
+              'pos': item.pos,
+              'type': _topicSavePointConverter.encode(item.type),
+              'parentKey': item.parentKey
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1569,12 +1581,12 @@ class _$TopicSavePointDao extends TopicSavePointDao {
   final QueryAdapter _queryAdapter;
 
   final InsertionAdapter<TopicSavePointEntity>
-      _topicSavePointEntityInsertionAdapter;
+  _topicSavePointEntityInsertionAdapter;
 
   final UpdateAdapter<TopicSavePointEntity> _topicSavePointEntityUpdateAdapter;
 
   final DeletionAdapter<TopicSavePointEntity>
-      _topicSavePointEntityDeletionAdapter;
+  _topicSavePointEntityDeletionAdapter;
 
   @override
   Stream<TopicSavePointEntity?> getStreamTopicSavePointEntity(
@@ -1625,34 +1637,34 @@ class _$HistoryDao extends HistoryDao {
         _historyEntityInsertionAdapter = InsertionAdapter(
             database,
             'History',
-            (HistoryEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'originType': item.originType,
-                  'modifiedDate': item.modifiedDate
-                },
+                (HistoryEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'originType': item.originType,
+              'modifiedDate': item.modifiedDate
+            },
             changeListener),
         _historyEntityUpdateAdapter = UpdateAdapter(
             database,
             'History',
             ['id'],
-            (HistoryEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'originType': item.originType,
-                  'modifiedDate': item.modifiedDate
-                },
+                (HistoryEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'originType': item.originType,
+              'modifiedDate': item.modifiedDate
+            },
             changeListener),
         _historyEntityDeletionAdapter = DeletionAdapter(
             database,
             'History',
             ['id'],
-            (HistoryEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'originType': item.originType,
-                  'modifiedDate': item.modifiedDate
-                },
+                (HistoryEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'originType': item.originType,
+              'modifiedDate': item.modifiedDate
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1724,34 +1736,34 @@ class _$BackupMetaDao extends BackupMetaDao {
         _backupMetaInsertionAdapter = InsertionAdapter(
             database,
             'BackupMeta',
-            (BackupMeta item) => <String, Object?>{
-                  'id': item.id,
-                  'fileName': item.fileName,
-                  'updatedDate': item.updatedDate,
-                  'isAuto': item.isAuto ? 1 : 0
-                },
+                (BackupMeta item) => <String, Object?>{
+              'id': item.id,
+              'fileName': item.fileName,
+              'updatedDate': item.updatedDate,
+              'isAuto': item.isAuto ? 1 : 0
+            },
             changeListener),
         _backupMetaUpdateAdapter = UpdateAdapter(
             database,
             'BackupMeta',
             ['id'],
-            (BackupMeta item) => <String, Object?>{
-                  'id': item.id,
-                  'fileName': item.fileName,
-                  'updatedDate': item.updatedDate,
-                  'isAuto': item.isAuto ? 1 : 0
-                },
+                (BackupMeta item) => <String, Object?>{
+              'id': item.id,
+              'fileName': item.fileName,
+              'updatedDate': item.updatedDate,
+              'isAuto': item.isAuto ? 1 : 0
+            },
             changeListener),
         _backupMetaDeletionAdapter = DeletionAdapter(
             database,
             'BackupMeta',
             ['id'],
-            (BackupMeta item) => <String, Object?>{
-                  'id': item.id,
-                  'fileName': item.fileName,
-                  'updatedDate': item.updatedDate,
-                  'isAuto': item.isAuto ? 1 : 0
-                },
+                (BackupMeta item) => <String, Object?>{
+              'id': item.id,
+              'fileName': item.fileName,
+              'updatedDate': item.updatedDate,
+              'isAuto': item.isAuto ? 1 : 0
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1893,68 +1905,68 @@ class _$BackupDao extends BackupDao {
         _historyEntityInsertionAdapter = InsertionAdapter(
             database,
             'History',
-            (HistoryEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'originType': item.originType,
-                  'modifiedDate': item.modifiedDate
-                },
+                (HistoryEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'originType': item.originType,
+              'modifiedDate': item.modifiedDate
+            },
             changeListener),
         _listEntityInsertionAdapter = InsertionAdapter(
             database,
             'list',
-            (ListEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'name': item.name,
-                  'isRemovable': item.isRemovable ? 1 : 0,
-                  'sourceId': item.sourceId,
-                  'isArchive': item.isArchive ? 1 : 0,
-                  'pos': item.pos
-                },
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'name': item.name,
+              'isRemovable': item.isRemovable ? 1 : 0,
+              'sourceId': item.sourceId,
+              'isArchive': item.isArchive ? 1 : 0,
+              'pos': item.pos
+            },
             changeListener),
         _listHadithEntityInsertionAdapter = InsertionAdapter(
             database,
             'listHadith',
-            (ListHadithEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'hadithId': item.hadithId,
-                  'pos': item.pos
-                },
+                (ListHadithEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'hadithId': item.hadithId,
+              'pos': item.pos
+            },
             changeListener),
         _listVerseEntityInsertionAdapter = InsertionAdapter(
             database,
             'listVerse',
-            (ListVerseEntity item) => <String, Object?>{
-                  'listId': item.listId,
-                  'verseId': item.verseId,
-                  'pos': item.pos
-                },
+                (ListVerseEntity item) => <String, Object?>{
+              'listId': item.listId,
+              'verseId': item.verseId,
+              'pos': item.pos
+            },
             changeListener),
         _savePointInsertionAdapter = InsertionAdapter(
             database,
             'savePoint',
-            (SavePoint item) => <String, Object?>{
-                  'id': item.id,
-                  'itemIndexPos': item.itemIndexPos,
-                  'title': item.title,
-                  'isAuto': item.isAuto ? 1 : 0,
-                  'modifiedDate': item.modifiedDate,
-                  'savePointType':
-                      _originTagConverter.encode(item.savePointType),
-                  'bookIdBinary': item.bookIdBinary,
-                  'parentName': item.parentName,
-                  'parentKey': item.parentKey
-                },
+                (SavePoint item) => <String, Object?>{
+              'id': item.id,
+              'itemIndexPos': item.itemIndexPos,
+              'title': item.title,
+              'isAuto': item.isAuto ? 1 : 0,
+              'modifiedDate': item.modifiedDate,
+              'savePointType':
+              _originTagConverter.encode(item.savePointType),
+              'bookIdBinary': item.bookIdBinary,
+              'parentName': item.parentName,
+              'parentKey': item.parentKey
+            },
             changeListener),
         _topicSavePointEntityInsertionAdapter = InsertionAdapter(
             database,
             'topicSavePoint',
-            (TopicSavePointEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'pos': item.pos,
-                  'type': _topicSavePointConverter.encode(item.type),
-                  'parentKey': item.parentKey
-                },
+                (TopicSavePointEntity item) => <String, Object?>{
+              'id': item.id,
+              'pos': item.pos,
+              'type': _topicSavePointConverter.encode(item.type),
+              'parentKey': item.parentKey
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1974,7 +1986,7 @@ class _$BackupDao extends BackupDao {
   final InsertionAdapter<SavePoint> _savePointInsertionAdapter;
 
   final InsertionAdapter<TopicSavePointEntity>
-      _topicSavePointEntityInsertionAdapter;
+  _topicSavePointEntityInsertionAdapter;
 
   @override
   Future<List<HistoryEntity>> getHistories() async {
@@ -2026,7 +2038,7 @@ class _$BackupDao extends BackupDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-                _originTagConverter.decode(row['savePointType'] as int),
+            _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String));
@@ -2152,31 +2164,31 @@ class _$UserInfoDao extends UserInfoDao {
         _userInfoEntityInsertionAdapter = InsertionAdapter(
             database,
             'userInfo',
-            (UserInfoEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'userId': item.userId,
-                  'img': item.img
-                },
+                (UserInfoEntity item) => <String, Object?>{
+              'id': item.id,
+              'userId': item.userId,
+              'img': item.img
+            },
             changeListener),
         _userInfoEntityUpdateAdapter = UpdateAdapter(
             database,
             'userInfo',
             ['id'],
-            (UserInfoEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'userId': item.userId,
-                  'img': item.img
-                },
+                (UserInfoEntity item) => <String, Object?>{
+              'id': item.id,
+              'userId': item.userId,
+              'img': item.img
+            },
             changeListener),
         _userInfoEntityDeletionAdapter = DeletionAdapter(
             database,
             'userInfo',
             ['id'],
-            (UserInfoEntity item) => <String, Object?>{
-                  'id': item.id,
-                  'userId': item.userId,
-                  'img': item.img
-                },
+                (UserInfoEntity item) => <String, Object?>{
+              'id': item.id,
+              'userId': item.userId,
+              'img': item.img
+            },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
