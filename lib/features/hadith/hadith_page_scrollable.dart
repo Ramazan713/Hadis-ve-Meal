@@ -183,6 +183,7 @@ class _HadithPageScrollableState extends DisplayPageState<HadithPageScrollable> 
                     return ValueListenableBuilder(
                       builder: (context, value, child) {
                         return HadithScrollableItem(
+                          key: ObjectKey(value),
                           searchCriteriaEnum: searchCriteriaEnum,
                           searchKey: cleanableSearchText,
                           hadithTopic: item,

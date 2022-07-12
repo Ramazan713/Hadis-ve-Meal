@@ -10,5 +10,8 @@ const kTimeOutSeconds=17;
 
 const kResizeToAvoidBottomInset=false;
 
+const kPagingPreviewSetIndexNumber=3;
+const kPagingLimitCount=19;
+
 
 const kIsTextBlackWithLightPrimary=true;

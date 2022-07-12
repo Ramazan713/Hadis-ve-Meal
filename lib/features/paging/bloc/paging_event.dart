@@ -1,6 +1,7 @@
 
 
 import 'package:equatable/equatable.dart';
+import 'package:hadith/constants/app_constants.dart';
 
 
 class IPagingEvent extends Equatable{
@@ -28,9 +29,9 @@ class PagingEventSetPage extends IPagingEvent{
     leftOver=itemIndex!=null?itemIndex%limit:0;
     if(itemIndex!=null){
       leftOver=itemIndex%limit;
-      if(this.page!=2&&leftOver==0){
+      if(this.page!=2&&leftOver<kPagingPreviewSetIndexNumber){
           this.page=this.page-1;
-          leftOver=limit;
+          leftOver=limit+leftOver;
         }
     }else{
       leftOver = this.page==1?0:limit;

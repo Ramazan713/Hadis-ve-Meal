@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:hadith/constants/app_constants.dart';
 import 'package:hadith/constants/enums/origin_tag_enum.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
 import 'package:hadith/constants/menu_resources.dart';
@@ -37,7 +38,7 @@ abstract class DisplayPageState<T extends StatefulWidget> extends State<T>
   final ValueNotifier<bool>changeBarTitleNotifier=ValueNotifier(true);
   final CustomScrollingController customPagingController = CustomScrollingController();
   late ListBloc listBloc;
-  final int limitCount = 23;
+  final int limitCount = kPagingLimitCount;
   String? cleanableSearchText;
   final rebuildItemNotifier=ValueNotifier(false);
   PagingArgument pagingArgument=DefaultPagingArgument();

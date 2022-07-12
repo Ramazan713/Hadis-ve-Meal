@@ -10,12 +10,12 @@ import 'package:hadith/db/entities/i_hadith_verse.dart';
       entity: Book
   )
 ])
-class Hadith extends IHadithVerse{
+class Hadith extends IHadithVerse {
   final String content;
   final String source;
   final int contentSize;
 
-  Hadith({required this.content,required this.contentSize,required this.source,int? id,int? rowNumber,
+  const Hadith({required this.content,required this.contentSize,required this.source,int? id,int? rowNumber,
     required int bookId})
       :super(id: id,rowNumber: rowNumber,bookId: bookId);
 
@@ -23,4 +23,7 @@ class Hadith extends IHadithVerse{
   String toString() {
     return "Hadith(id=$id,content=$content,source=$source,rowNumber=$rowNumber,bookId=$bookId)";
   }
+
+  @override
+  List<Object?> get props => [content,source,contentSize,id,rowNumber,bookId];
 }

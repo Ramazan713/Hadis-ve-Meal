@@ -39,4 +39,9 @@ class Verse extends IHadithVerse{
   required this.verseNumber,required this.content,required this.pageRank,
     required this.surahName,required this.isProstrationVerse,int? id,int? rowNumber,
     required int bookId}):super(id: id,rowNumber: rowNumber,bookId: bookId);
+
+  @override
+
+  List<Object?> get props => [surahId,cuzNo,pageNo,verseNumber,content,pageRank
+    ,surahName,isProstrationVerse,id,rowNumber,bookId];
 }

@@ -247,6 +247,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                           valueListenable: rebuildItemNotifier,
                           builder: (context, value, child) {
                             return VerseItem(
+                              key: ObjectKey(value),
                               arabicVerseUIEnum: lastSelectedArabicUI,
                               verseModel: item,
                               searchKey: cleanableSearchText,

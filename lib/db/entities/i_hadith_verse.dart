@@ -1,11 +1,13 @@
 
+import 'package:equatable/equatable.dart';
 import 'package:floor/floor.dart';
 
-abstract class IHadithVerse{
+abstract class IHadithVerse extends Equatable{
   @PrimaryKey(autoGenerate: true)
   final int? id;
   final int? rowNumber;
   final int bookId;
 
-  IHadithVerse({this.id,this.rowNumber,required this.bookId});
+  const IHadithVerse({this.id,this.rowNumber,required this.bookId});
+
 }
