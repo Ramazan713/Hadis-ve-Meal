@@ -60,11 +60,16 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
   Future<List<VerseModel>>_getVerseModels(int limit, int page)async{
     var verses=await getVerses(limit, page);
     var verseModels=<VerseModel>[];
+    final baseRowNumber = (page-1)*limit;
+
+    int i=0;
     for(var verse in verses){
+      i++;
       final isFavorite=await _isVerseFavorite(verse);
       final isAddListNotEmpty=await _isVerseAddListNotEmpty(verse);
       final arabicVerses = await _getArabicVerses(verse);
       verseModels.add(VerseModel(item: verse,arabicVerses: arabicVerses,
+          rowNumber: baseRowNumber+i,
           isFavorite: isFavorite, isAddListNotEmpty: isAddListNotEmpty));
     }
     return Future.value(verseModels);

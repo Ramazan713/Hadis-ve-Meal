@@ -156,7 +156,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
           break;
         case VerseEditEnum.savePoint:
           Navigator.pop(context);
-          _showSavePointBottomDia(item.item.rowNumber??lastIndex);
+          _showSavePointBottomDia(item.rowNumber);
           break;
       }
     });
@@ -249,6 +249,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                           builder: (context, value, child) {
                             return VerseItem(
                               key: ObjectKey(value),
+                              rowNumber: item.rowNumber,
                               arabicVerseUIEnum: lastSelectedArabicUI,
                               verseModel: item,
                               searchKey: cleanableSearchText,
@@ -270,7 +271,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                   forwardValue: 5,
                   minMaxListener: (minPos, maxPos, state) {
                     lastIndex =
-                        state?.items[(minPos + maxPos) ~/ 2]?.item.rowNumber;
+                        state?.items[(minPos + maxPos) ~/ 2]?.rowNumber;
                   },
                   isItemLoadingWidgetPlaceHolder: true,
                   placeHolderWidget: getVerseShimmer(context)

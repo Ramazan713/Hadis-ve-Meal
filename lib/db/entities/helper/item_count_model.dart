@@ -7,8 +7,12 @@ class ItemCountModel{
   final int id;
   final String name;
   final int itemCount;
-  final int? rowNumber;
 
-  ItemCountModel({required this.id,required this.name,required this.itemCount,this.rowNumber});
+  @ignore
+  int? rowNumber=0;
+
+  ItemCountModel({required this.id,required this.name,required this.itemCount,this.rowNumber=0});
+
+
 
 }

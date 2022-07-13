@@ -8,6 +8,7 @@ class VerseModel extends IAddListCommon<Verse>{
 
 
   VerseModel({required Verse item,required bool isFavorite,required this.arabicVerses,
-    required bool isAddListNotEmpty})
-      :super(isFavorite: isFavorite,isAddListNotEmpty: isAddListNotEmpty,item: item);
+    required bool isAddListNotEmpty,required int rowNumber})
+      :super(isFavorite: isFavorite,isAddListNotEmpty: isAddListNotEmpty,
+      item: item,rowNumber: rowNumber);
 }

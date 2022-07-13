@@ -7,7 +7,7 @@ import 'package:hadith/db/entities/helper/item_count_model.dart';
 @dao
 abstract class SectionDao{
 
-  @Query("select select row_number() over() rowNumber,* from section where bookId=:bookId")
+  @Query("select * from section where bookId=:bookId")
   Future<List<Section>> getSectionsWithBookId(int bookId);
 
   @Query("""select S.id,S.name,count(T.id)itemCount from

@@ -30,18 +30,17 @@ class Verse extends IHadithVerse{
   final String content;
   final bool isProstrationVerse;
 
-  final int? pageRank;
   final String? surahName;
 
 
 
   const Verse({required this.surahId,required this.cuzNo,required this.pageNo,
-  required this.verseNumber,required this.content,required this.pageRank,
-    required this.surahName,required this.isProstrationVerse,int? id,int? rowNumber,
-    required int bookId}):super(id: id,rowNumber: rowNumber,bookId: bookId);
+  required this.verseNumber,required this.content,
+    required this.surahName,required this.isProstrationVerse,int? id,
+    required int bookId}):super(id: id,bookId: bookId);
 
   @override
 
-  List<Object?> get props => [surahId,cuzNo,pageNo,verseNumber,content,pageRank
-    ,surahName,isProstrationVerse,id,rowNumber,bookId];
+  List<Object?> get props => [surahId,cuzNo,pageNo,verseNumber,content
+    ,surahName,isProstrationVerse,id,bookId];
 }

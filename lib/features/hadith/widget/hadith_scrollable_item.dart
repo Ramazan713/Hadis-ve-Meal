@@ -12,11 +12,13 @@ class HadithScrollableItem extends StatefulWidget {
       favoriteIconClick;
   final void Function(void Function(void Function()))? listIconClick;
   final String? searchKey;
+  final int rowNumber;
   final SearchCriteriaEnum searchCriteriaEnum;
 
   HadithScrollableItem(
       {Key? key,
       required this.hadithTopic,
+      required this.rowNumber,
       required this.fontSize,
       this.shareIconClick,
       this.favoriteIconClick,
@@ -90,17 +92,22 @@ class _HadithScrollableItemState extends State<HadithScrollableItem> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${hadith.rowNumber}",
+                  "${widget.rowNumber}",
                   textAlign: TextAlign.start,
                   style: textStyle?.copyWith(fontSize: widget.fontSize - 2),
                 ),
-                const SizedBox(width: 7,),
+                const SizedBox(
+                  width: 7,
+                ),
                 Expanded(
                   child: Text("- $topicText",
                       textAlign: TextAlign.center,
-                      style:textStyle?.copyWith(fontSize: widget.fontSize - 4)),
+                      style:
+                          textStyle?.copyWith(fontSize: widget.fontSize - 4)),
                 ),
-                const SizedBox(width: 33,)
+                const SizedBox(
+                  width: 33,
+                )
               ],
             ),
             const SizedBox(

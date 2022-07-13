@@ -6,8 +6,9 @@ class HadithTopicsModel extends IAddListCommon<Hadith>{
   final List<Topic>topics;
 
   HadithTopicsModel({required Hadith item,required this.topics,required bool isFavorite,
-    required bool isAddListNotEmpty})
-      :super(isFavorite: isFavorite,isAddListNotEmpty: isAddListNotEmpty,item: item);
+    required bool isAddListNotEmpty,required int rowNumber})
+      :super(isFavorite: isFavorite,isAddListNotEmpty: isAddListNotEmpty,
+      item: item,rowNumber: rowNumber);
 
 
 }

@@ -20,11 +20,16 @@ class SectionBloc extends Bloc<ITopicEvent,TopicState>{
       topicRepo.getSearchSectionWithBookId(event.bookId, event.searchCriteria??""):
         topicRepo.getSectionWithBookId(event.bookId);
 
-    final sections=await dataSource;
+    int i=0;
+    final sections=(await dataSource).map((e){
+      e.rowNumber=++i;
+      return e;
+    }).toList();
 
     if(!isSearching){
       final int itemCount=((await topicRepo.getTopicCountsWithBookId(event.bookId))?.data)??0;
-      final itemCountModel=ItemCountModel(id: 0, name: "Tüm Başlıklar", itemCount: itemCount);
+      final itemCountModel=ItemCountModel(id: 0, name: "Tüm Başlıklar",
+          itemCount: itemCount,rowNumber: null);
       sections.insert(0, itemCountModel);
     }
     emit(state.copyWith(status: DataStatus.success,topics: sections));

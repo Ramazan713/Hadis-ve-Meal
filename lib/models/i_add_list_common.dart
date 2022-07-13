@@ -4,9 +4,10 @@ import 'package:hadith/db/entities/i_hadith_verse.dart';
 abstract class IAddListCommon<T extends IHadithVerse>{
   late bool _isFavorite;
   late bool _isAddListNotEmpty;
+  final int rowNumber;
   final T item;
 
-  IAddListCommon({required bool isFavorite,required this.item,
+  IAddListCommon({required bool isFavorite,required this.item,required this.rowNumber,
     required bool isAddListNotEmpty}){
     _isFavorite=isFavorite;
     _isAddListNotEmpty=isAddListNotEmpty;

@@ -220,7 +220,7 @@ abstract class DisplayPageState<T extends StatefulWidget> extends State<T>
         showCustomAlertBottomDia(context,title: "Favori listesinden kaldırmak istediğinize emin misiniz?",
             content: "Bulunduğunuz listeyi etkileyecektir",btnApproved: (){
               removeFavoriteList(listBloc,listParam.listCommon,listParam.favoriteListId);
-              reloadPagingItems(listParam.listCommon.item.rowNumber??0);
+              reloadPagingItems(listParam.listCommon.rowNumber);
               reloadPagingListener?.call();
             });
       }else{
@@ -245,7 +245,7 @@ abstract class DisplayPageState<T extends StatefulWidget> extends State<T>
 
           if(isChange){
             if (isLoaderListPaging&&listParam.favoriteListId!=parentId&&!selectedIds.contains(parentId)) {
-              reloadPagingItems(listParam.listCommon.item.rowNumber??0);
+              reloadPagingItems(listParam.listCommon.rowNumber);
             }
 
             listParam.listCommon.isAddListNotEmpty=selectedIds.isNotEmpty;

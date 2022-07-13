@@ -15,8 +15,7 @@ abstract class TopicDao{
   @Query("""select * from topic where sectionId=:sectionId""")
   Future<List<Topic>> getTopicsWithSectionId(int sectionId);
 
-  @Query("""select row_number() over(partition by T.sectionId) rowNumber,
-    T.id,T.name,count(HT.hadithId)itemCount from 
+  @Query("""select T.id,T.name,count(HT.hadithId)itemCount from 
     topic T,HadithTopic HT where T.id=HT.topicId and T.sectionId=:sectionId group by T.id""")
   Future<List<ItemCountModel>> getHadithTopicWithSectionId(int sectionId);
 
@@ -28,12 +27,12 @@ abstract class TopicDao{
       String or1,String or2,String or3);
 
 
-  @Query("""select row_number() over() rowNumber,T.id,T.name,count(HT.hadithId)itemCount from 
+  @Query("""select T.id,T.name,count(HT.hadithId)itemCount from 
     topic T,HadithTopic HT,section S where T.id=HT.topicId and S.id=T.sectionId 
     and S.bookId=:bookId group by T.id""")
   Future<List<ItemCountModel>> getHadithTopicWithBookId(int bookId);
 
-  @Query("""select row_number() over() rowNumber,T.id,T.name,count(HT.hadithId)itemCount from 
+  @Query("""select T.id,T.name,count(HT.hadithId)itemCount from 
     topic T,HadithTopic HT,Section S where T.id=HT.topicId and S.id=T.sectionId and S.bookId=:bookId and T.name like :query 
     group by T.id order by (case when T.name=:or1 then 1 when T.name like :or2 then 2 when T.name like :or3
       then 3 else 4 end )""")
@@ -42,7 +41,7 @@ abstract class TopicDao{
 
 
 
-  @Query("""select row_number() over() rowNumber,T.id,T.name,count(VT.verseId)itemCount from
+  @Query("""select T.id,T.name,count(VT.verseId)itemCount from
     topic T,VerseTopic VT where T.id=VT.topicId and T.sectionId=:sectionId group by T.id""")
   Future<List<ItemCountModel>> getVerseTopicWithSectionId(int sectionId);
 
@@ -54,7 +53,7 @@ abstract class TopicDao{
       String or1,String or2,String or3);
 
 
-  @Query("""select row_number() over() rowNumber,T.id,T.name,count(VT.verseId)itemCount from
+  @Query("""select T.id,T.name,count(VT.verseId)itemCount from
     topic T,VerseTopic VT,Section S where T.id=VT.topicId and 
     S.id=T.sectionId and S.bookId=:bookId group by T.id""")
   Future<List<ItemCountModel>> getVerseTopicWithBookId(int bookId);
@@ -68,14 +67,14 @@ abstract class TopicDao{
       String or1,String or2,String or3);
 
 
-  @Query("""select row_number() over() rowNumber,S.id,S.name,count(T.id)itemCount from section S,Topic T 
+  @Query("""select S.id,S.name,count(T.id)itemCount from section S,Topic T 
       where S.id=T.sectionId and S.bookId=:bookId group by S.id""")
   Future<List<ItemCountModel>> getSectionWithBookId(int bookId);
 
   @Query("""select count(T.id) data from topic T,Section S where T.sectionId=S.id and S.bookId=:bookId""")
   Future<IntData?>getTopicCountsWithBookId(int bookId);
 
-  @Query("""select row_number() over() rowNumber,S.id,S.name,count(T.id)itemCount from section S,Topic T 
+  @Query("""select S.id,S.name,count(T.id)itemCount from section S,Topic T 
       where S.id=T.sectionId and S.bookId=:bookId and S.name like :query group by S.id 
       order by (case when S.name=:or1 then 1 when S.name like :or2 then 2 when S.name like :or3
       then 3 else 4 end )""")

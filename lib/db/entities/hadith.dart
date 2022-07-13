@@ -15,15 +15,15 @@ class Hadith extends IHadithVerse {
   final String source;
   final int contentSize;
 
-  const Hadith({required this.content,required this.contentSize,required this.source,int? id,int? rowNumber,
+  const Hadith({required this.content,required this.contentSize,required this.source,int? id,
     required int bookId})
-      :super(id: id,rowNumber: rowNumber,bookId: bookId);
+      :super(id: id,bookId: bookId);
 
   @override
   String toString() {
-    return "Hadith(id=$id,content=$content,source=$source,rowNumber=$rowNumber,bookId=$bookId)";
+    return "Hadith(id=$id,content=$content,source=$source,bookId=$bookId)";
   }
 
   @override
-  List<Object?> get props => [content,source,contentSize,id,rowNumber,bookId];
+  List<Object?> get props => [content,source,contentSize,id,bookId];
 }

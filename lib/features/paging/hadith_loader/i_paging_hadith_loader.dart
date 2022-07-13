@@ -55,11 +55,16 @@ abstract class IPagingHadithLoader extends IPagingLoader<HadithTopicsModel>{
   Future<List<HadithTopicsModel>>_getHadithTopics(int limit, int page)async{
     var hadiths=await getHadiths(limit, page);
     var hadithTopics=<HadithTopicsModel>[];
+    final baseRowNumber = (page-1)*limit;
+
+    int i=0;
     for(var hadith in hadiths){
+      i++;
       var topics=await topicRepo.getHadithTopics(hadith.id??0);
       final isFavorite=await _isHadithFavorite(hadith);
       final isHadithAddListNotEmpty=await _isHadithAddListNotEmpty(hadith);
       hadithTopics.add(HadithTopicsModel(item: hadith, topics: topics,
+          rowNumber: baseRowNumber+i,
           isFavorite: isFavorite,isAddListNotEmpty: isHadithAddListNotEmpty));
     }
     return Future.value(hadithTopics);

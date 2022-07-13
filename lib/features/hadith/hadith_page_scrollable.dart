@@ -185,6 +185,7 @@ class _HadithPageScrollableState extends DisplayPageState<HadithPageScrollable> 
                       builder: (context, value, child) {
                         return HadithScrollableItem(
                           key: ObjectKey(value),
+                          rowNumber: item.rowNumber,
                           searchCriteriaEnum: searchCriteriaEnum,
                           searchKey: cleanableSearchText,
                           hadithTopic: item,
@@ -225,7 +226,7 @@ class _HadithPageScrollableState extends DisplayPageState<HadithPageScrollable> 
                   return const Text("");
                 },
                 minMaxListener: (minPos, maxPos, state) {
-                  lastIndex = state?.items[(minPos + maxPos) ~/ 2].item.rowNumber;
+                  lastIndex = state?.items[(minPos + maxPos) ~/ 2].rowNumber;
                 },
                 page: 1,
                 forwardValue: 2,

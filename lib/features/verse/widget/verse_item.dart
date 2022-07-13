@@ -10,6 +10,7 @@ class VerseItem extends StatelessWidget {
   final Function() onLongPress;
   final VerseModel verseModel;
   final double fontSize;
+  final int rowNumber;
   final double _borderRadius = 13;
   final bool showRowNumber;
   final String? searchKey;
@@ -22,9 +23,10 @@ class VerseItem extends StatelessWidget {
   VerseItem(
       {Key? key,
       required this.fontSize,
-        required this.arabicVerseUIEnum,
+      required this.arabicVerseUIEnum,
       required this.verseModel,
       this.showRowNumber = false,
+      required this.rowNumber,
       this.searchKey,
       required this.searchCriteriaEnum,
       required this.onLongPress})
@@ -33,20 +35,9 @@ class VerseItem extends StatelessWidget {
   }
 
   Widget getRowNumberWidget() {
-    if (showRowNumber && verse.rowNumber != null) {
-      return Text("${verse.rowNumber}",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: fontSize - 5));
-    }
-    return const SizedBox();
+    return Text("$rowNumber",
+        textAlign: TextAlign.center, style: TextStyle(fontSize: fontSize - 5));
   }
-
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +46,6 @@ class VerseItem extends StatelessWidget {
         fontWeight:
             verse.isProstrationVerse ? FontWeight.w700 : FontWeight.normal,
         inherit: true);
-
-
 
     final content = TextUtils.getSelectedText(verse.content, searchKey,
         textStyle: contentTextStyle,
@@ -81,7 +70,9 @@ class VerseItem extends StatelessWidget {
                     Expanded(
                       child: Text(
                         "${verse.surahId}/${verse.surahName}",
-                        style: Theme.of(context).textTheme.bodyText1
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText1
                             ?.copyWith(fontSize: fontSize - 5),
                       ),
                     ),
@@ -90,10 +81,12 @@ class VerseItem extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          getVerseItemInfoWidget(context,verse,fontSize),
+                          getVerseItemInfoWidget(context, verse, fontSize),
                           Text("${verse.pageNo}",
                               textAlign: TextAlign.end,
-                              style: Theme.of(context).textTheme.bodyText1
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1
                                   ?.copyWith(fontSize: fontSize - 5))
                         ],
                       ),
@@ -104,7 +97,8 @@ class VerseItem extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 7, bottom: 13),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: getVerseItemContent(content,verseModel,fontSize,contentTextStyle,arabicVerseUIEnum),
+                      children: getVerseItemContent(content, verseModel,
+                          fontSize, contentTextStyle, arabicVerseUIEnum),
                     )),
               ],
             ),

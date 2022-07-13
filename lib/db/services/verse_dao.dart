@@ -14,9 +14,7 @@ abstract class VerseDao{
   Future<List<Verse>> getVersesWithCuzNo(int cuzNo);
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S
+  @Query("""select V.*,S.name surahName from verse V,Surah S
        where V.surahId=S.id limit :limit offset :limit*((:page)-1)""")
   Future<List<Verse>>getPagingVerses(int limit,int page);
 
@@ -24,9 +22,7 @@ abstract class VerseDao{
   Future<IntData?>getPagingCount();
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S,VerseTopic VT
+  @Query("""select V.*,S.name surahName from verse V,Surah S,VerseTopic VT
        where V.surahId=S.id and VT.verseId=V.id and VT.topicId=:topicId
        limit :limit offset :limit*((:page)-1)""")
   Future<List<Verse>>getPagingTopicVerses(int limit,int page,int topicId);
@@ -35,9 +31,7 @@ abstract class VerseDao{
   Future<IntData?>getPagingTopicVersesCount(int topicId);
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S
+  @Query("""select V.*,S.name surahName from verse V,Surah S
        where V.surahId=S.id and S.id=:surahId limit :limit offset :limit*((:page)-1)""")
   Future<List<Verse>>getPagingSurahVerses(int limit,int page,int surahId);
 
@@ -45,9 +39,7 @@ abstract class VerseDao{
   Future<IntData?>getPagingSurahVersesCount(int surahId);
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S,Cuz C
+  @Query("""select V.*,S.name surahName from verse V,Surah S,Cuz C
        where V.surahId=S.id and C.cuzNo=V.cuzNo and V.cuzNo=:cuzNo limit :limit offset :limit*((:page)-1)""")
   Future<List<Verse>>getPagingCuzVerses(int limit,int page,int cuzNo);
 
@@ -55,9 +47,7 @@ abstract class VerseDao{
   Future<IntData?>getPagingCuzVersesCount(int cuzNo);
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over(order by LV.pos desc) rowNumber,
-      V.*,S.name surahName from verse V,Surah S,ListVerse LV
+  @Query("""select V.*,S.name surahName from verse V,Surah S,ListVerse LV
       where V.surahId=S.id and LV.verseId=V.id and LV.listId=:listId order by LV.pos desc limit :limit offset :limit*((:page)-1)
       """)
   Future<List<Verse>>getPagingListVerses(int limit,int page,int listId);
@@ -66,9 +56,7 @@ abstract class VerseDao{
   Future<IntData?>getPagingListVersesCount(int listId);
 
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over(order by LV.pos desc) rowNumber,
-      V.*,S.name surahName from verse V,Surah S,ListVerse LV
+  @Query("""select V.*,S.name surahName from verse V,Surah S,ListVerse LV
       where V.surahId=S.id and LV.verseId=V.id and LV.listId=:listId order by LV.pos desc
       """)
   Future<List<Verse>>getListVerses(int listId);
@@ -78,9 +66,7 @@ abstract class VerseDao{
   @Query("""select count(id) data from verse V where lower(content)  REGEXP lower(:regExp) """)
   Future<IntData?> getSearchWithVerseCountWithRegEx(String regExp);
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S
+  @Query("""select V.*,S.name surahName from verse V,Surah S
       where V.surahId=S.id and  lower(content)  REGEXP lower(:regExp)
       limit :limit offset :limit * ((:page) -1)""")
   Future<List<Verse>>getPagingSearchVersesWithRegEx(int limit,int page,String regExp);
@@ -89,9 +75,7 @@ abstract class VerseDao{
   @Query("""select count(id) data from verse V where lower(content) Like lower(:query) """)
   Future<IntData?> getSearchWithVerseCount(String query);
 
-  @Query("""select row_number() over(partition by pageNo)pageRank,
-      row_number() over() rowNumber,
-      V.*,S.name surahName from verse V,Surah S
+  @Query("""select V.*,S.name surahName from verse V,Surah S
       where V.surahId=S.id and  lower(content)  Like lower(:query)
       limit :limit offset :limit * ((:page) -1)""")
   Future<List<Verse>>getPagingSearchVerses(int limit,int page,String query);

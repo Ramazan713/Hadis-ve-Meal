@@ -46,7 +46,12 @@ class TopicBloc extends Bloc<ITopicEvent,TopicState>{
     final sourceData=event.sourceTypeEnum==SourceTypeEnum.hadith?
       hadithSource:verseSource;
 
-    final topics=await sourceData;
+    int i=0;
+    final topics=(await sourceData).map((e){
+      e.rowNumber=++i;
+      return e;
+    }).toList();
+
 
     emit(state.copyWith(status: DataStatus.success,topics: topics));
   }

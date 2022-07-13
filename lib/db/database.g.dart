@@ -90,7 +90,7 @@ class _$AppDatabase extends AppDatabase {
   Future<sqflite.Database> open(String path, List<Migration> migrations,
       [Callback? callback]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -106,7 +106,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `hadith` (`content` TEXT NOT NULL, `source` TEXT NOT NULL, `contentSize` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT, `rowNumber` INTEGER, `bookId` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `book` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `hadith` (`content` TEXT NOT NULL, `source` TEXT NOT NULL, `contentSize` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT, `bookId` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `book` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Cuz` (`cuzNo` INTEGER NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY (`cuzNo`))');
         await database.execute(
@@ -114,7 +114,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `topic` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `sectionId` INTEGER NOT NULL, FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `verse` (`surahId` INTEGER NOT NULL, `cuzNo` INTEGER NOT NULL, `pageNo` INTEGER NOT NULL, `verseNumber` TEXT NOT NULL, `content` TEXT NOT NULL, `isProstrationVerse` INTEGER NOT NULL, `pageRank` INTEGER, `surahName` TEXT, `id` INTEGER PRIMARY KEY AUTOINCREMENT, `rowNumber` INTEGER, `bookId` INTEGER NOT NULL, FOREIGN KEY (`cuzNo`) REFERENCES `Cuz` (`cuzNo`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`surahId`) REFERENCES `Surah` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`bookId`) REFERENCES `book` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `verse` (`surahId` INTEGER NOT NULL, `cuzNo` INTEGER NOT NULL, `pageNo` INTEGER NOT NULL, `verseNumber` TEXT NOT NULL, `content` TEXT NOT NULL, `isProstrationVerse` INTEGER NOT NULL, `surahName` TEXT, `id` INTEGER PRIMARY KEY AUTOINCREMENT, `bookId` INTEGER NOT NULL, FOREIGN KEY (`cuzNo`) REFERENCES `Cuz` (`cuzNo`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`surahId`) REFERENCES `Surah` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`bookId`) REFERENCES `book` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `section` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `bookId` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `book` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
@@ -138,7 +138,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `sourceType` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `sourceType` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ItemCountModel` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `itemCount` INTEGER NOT NULL, `rowNumber` INTEGER, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `ItemCountModel` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `itemCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `verseTopic` (`verseId` INTEGER NOT NULL, `topicId` INTEGER NOT NULL, FOREIGN KEY (`verseId`) REFERENCES `verse` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`topicId`) REFERENCES `topic` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, PRIMARY KEY (`verseId`, `topicId`))');
         await database.execute(
@@ -246,7 +246,6 @@ class _$HadithDao extends HadithDao {
             contentSize: row['contentSize'] as int,
             source: row['source'] as String,
             id: row['id'] as int?,
-            rowNumber: row['rowNumber'] as int?,
             bookId: row['bookId'] as int),
         queryableName: 'hadith',
         isView: false);
@@ -261,7 +260,6 @@ class _$HadithDao extends HadithDao {
             contentSize: row['contentSize'] as int,
             source: row['source'] as String,
             id: row['id'] as int?,
-            rowNumber: row['rowNumber'] as int?,
             bookId: row['bookId'] as int),
         arguments: [listId],
         queryableName: 'hadith',
@@ -277,7 +275,6 @@ class _$HadithDao extends HadithDao {
             contentSize: row['contentSize'] as int,
             source: row['source'] as String,
             id: row['id'] as int?,
-            rowNumber: row['rowNumber'] as int?,
             bookId: row['bookId'] as int),
         arguments: [topicId],
         queryableName: 'hadith',
@@ -294,8 +291,13 @@ class _$HadithDao extends HadithDao {
   @override
   Future<List<Hadith>> getPagingAllHadiths(int limit, int page) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from hadith limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from hadith limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(
+            content: row['content'] as String,
+            contentSize: row['contentSize'] as int,
+            source: row['source'] as String,
+            id: row['id'] as int?,
+            bookId: row['bookId'] as int),
         arguments: [limit, page]);
   }
 
@@ -311,8 +313,13 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingBookHadiths(
       int limit, int page, int bookId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from hadith where bookId=?3  limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from hadith where bookId=?3  limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(
+            content: row['content'] as String,
+            contentSize: row['contentSize'] as int,
+            source: row['source'] as String,
+            id: row['id'] as int?,
+            bookId: row['bookId'] as int),
         arguments: [limit, page, bookId]);
   }
 
@@ -328,16 +335,16 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingListHadiths(
       int limit, int page, int listId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(order by       LH.pos desc) rowNumber,H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?3 order by       LH.pos desc limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select ,H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?3 order by       LH.pos desc limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, listId]);
   }
 
   @override
   Future<List<Hadith>> getListHadiths(int listId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(order by       LH.pos desc) rowNumber,H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?1 order by       LH.pos desc',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?1 order by       LH.pos desc',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [listId]);
   }
 
@@ -353,8 +360,8 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingTopicHadiths(
       int limit, int page, int topicId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,H.* from Hadith H,HadithTopic HT      where HT.hadithId=H.id and HT.topicId=?3 limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select H.* from Hadith H,HadithTopic HT      where HT.hadithId=H.id and HT.topicId=?3 limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, topicId]);
   }
 
@@ -370,8 +377,8 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingSearchHadithsWithRegEx(
       int limit, int page, String regExp) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from Hadith where lower(content)  REGEXP lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from Hadith where lower(content)  REGEXP lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, regExp]);
   }
 
@@ -388,8 +395,8 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingSearchHadithsWithBookAndRegEx(
       int limit, int page, int bookId, String regExp) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from Hadith where bookId=?3 and       lower(content)  REGEXP lower(?4) limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from Hadith where bookId=?3 and       lower(content)  REGEXP lower(?4) limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, bookId, regExp]);
   }
 
@@ -405,8 +412,8 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingSearchHadiths(
       int limit, int page, String query) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from Hadith where lower(content) Like lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from Hadith where lower(content) Like lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, query]);
   }
 
@@ -423,8 +430,8 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingSearchHadithsWithBook(
       int limit, int page, int bookId, String query) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,* from Hadith where bookId=?3 and       lower(content) Like lower(?4) limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select * from Hadith where bookId=?3 and       lower(content) Like lower(?4) limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, bookId, query]);
   }
 }
@@ -453,98 +460,98 @@ class _$ListDao extends ListDao {
         _listEntityInsertionAdapter = InsertionAdapter(
             database,
             'list',
-                (ListEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'isRemovable': item.isRemovable ? 1 : 0,
-              'sourceId': item.sourceId,
-              'isArchive': item.isArchive ? 1 : 0,
-              'pos': item.pos
-            },
+            (ListEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'isRemovable': item.isRemovable ? 1 : 0,
+                  'sourceId': item.sourceId,
+                  'isArchive': item.isArchive ? 1 : 0,
+                  'pos': item.pos
+                },
             changeListener),
         _listHadithEntityInsertionAdapter = InsertionAdapter(
             database,
             'listHadith',
-                (ListHadithEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'hadithId': item.hadithId,
-              'pos': item.pos
-            },
+            (ListHadithEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'hadithId': item.hadithId,
+                  'pos': item.pos
+                },
             changeListener),
         _listVerseEntityInsertionAdapter = InsertionAdapter(
             database,
             'listVerse',
-                (ListVerseEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'verseId': item.verseId,
-              'pos': item.pos
-            },
+            (ListVerseEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'verseId': item.verseId,
+                  'pos': item.pos
+                },
             changeListener),
         _listEntityUpdateAdapter = UpdateAdapter(
             database,
             'list',
             ['id'],
-                (ListEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'isRemovable': item.isRemovable ? 1 : 0,
-              'sourceId': item.sourceId,
-              'isArchive': item.isArchive ? 1 : 0,
-              'pos': item.pos
-            },
+            (ListEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'isRemovable': item.isRemovable ? 1 : 0,
+                  'sourceId': item.sourceId,
+                  'isArchive': item.isArchive ? 1 : 0,
+                  'pos': item.pos
+                },
             changeListener),
         _listHadithEntityUpdateAdapter = UpdateAdapter(
             database,
             'listHadith',
             ['listId', 'hadithId'],
-                (ListHadithEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'hadithId': item.hadithId,
-              'pos': item.pos
-            },
+            (ListHadithEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'hadithId': item.hadithId,
+                  'pos': item.pos
+                },
             changeListener),
         _listVerseEntityUpdateAdapter = UpdateAdapter(
             database,
             'listVerse',
             ['listId', 'verseId'],
-                (ListVerseEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'verseId': item.verseId,
-              'pos': item.pos
-            },
+            (ListVerseEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'verseId': item.verseId,
+                  'pos': item.pos
+                },
             changeListener),
         _listEntityDeletionAdapter = DeletionAdapter(
             database,
             'list',
             ['id'],
-                (ListEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'isRemovable': item.isRemovable ? 1 : 0,
-              'sourceId': item.sourceId,
-              'isArchive': item.isArchive ? 1 : 0,
-              'pos': item.pos
-            },
+            (ListEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'isRemovable': item.isRemovable ? 1 : 0,
+                  'sourceId': item.sourceId,
+                  'isArchive': item.isArchive ? 1 : 0,
+                  'pos': item.pos
+                },
             changeListener),
         _listHadithEntityDeletionAdapter = DeletionAdapter(
             database,
             'listHadith',
             ['listId', 'hadithId'],
-                (ListHadithEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'hadithId': item.hadithId,
-              'pos': item.pos
-            },
+            (ListHadithEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'hadithId': item.hadithId,
+                  'pos': item.pos
+                },
             changeListener),
         _listVerseEntityDeletionAdapter = DeletionAdapter(
             database,
             'listVerse',
             ['listId', 'verseId'],
-                (ListVerseEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'verseId': item.verseId,
-              'pos': item.pos
-            },
+            (ListVerseEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'verseId': item.verseId,
+                  'pos': item.pos
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -996,11 +1003,9 @@ class _$VerseDao extends VerseDao {
             pageNo: row['pageNo'] as int,
             verseNumber: row['verseNumber'] as String,
             content: row['content'] as String,
-            pageRank: row['pageRank'] as int?,
             surahName: row['surahName'] as String?,
             isProstrationVerse: (row['isProstrationVerse'] as int) != 0,
             id: row['id'] as int?,
-            rowNumber: row['rowNumber'] as int?,
             bookId: row['bookId'] as int),
         arguments: [surahId]);
   }
@@ -1014,11 +1019,9 @@ class _$VerseDao extends VerseDao {
             pageNo: row['pageNo'] as int,
             verseNumber: row['verseNumber'] as String,
             content: row['content'] as String,
-            pageRank: row['pageRank'] as int?,
             surahName: row['surahName'] as String?,
             isProstrationVerse: (row['isProstrationVerse'] as int) != 0,
             id: row['id'] as int?,
-            rowNumber: row['rowNumber'] as int?,
             bookId: row['bookId'] as int),
         arguments: [cuzNo]);
   }
@@ -1026,8 +1029,8 @@ class _$VerseDao extends VerseDao {
   @override
   Future<List<Verse>> getPagingVerses(int limit, int page) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S        where V.surahId=S.id limit ?1 offset ?1*((?2)-1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S        where V.surahId=S.id limit ?1 offset ?1*((?2)-1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page]);
   }
 
@@ -1042,8 +1045,8 @@ class _$VerseDao extends VerseDao {
   Future<List<Verse>> getPagingTopicVerses(
       int limit, int page, int topicId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S,VerseTopic VT        where V.surahId=S.id and VT.verseId=V.id and VT.topicId=?3        limit ?1 offset ?1*((?2)-1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S,VerseTopic VT        where V.surahId=S.id and VT.verseId=V.id and VT.topicId=?3        limit ?1 offset ?1*((?2)-1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, topicId]);
   }
 
@@ -1059,8 +1062,8 @@ class _$VerseDao extends VerseDao {
   Future<List<Verse>> getPagingSurahVerses(
       int limit, int page, int surahId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S        where V.surahId=S.id and S.id=?3 limit ?1 offset ?1*((?2)-1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S        where V.surahId=S.id and S.id=?3 limit ?1 offset ?1*((?2)-1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, surahId]);
   }
 
@@ -1075,8 +1078,8 @@ class _$VerseDao extends VerseDao {
   @override
   Future<List<Verse>> getPagingCuzVerses(int limit, int page, int cuzNo) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S,Cuz C        where V.surahId=S.id and C.cuzNo=V.cuzNo and V.cuzNo=?3 limit ?1 offset ?1*((?2)-1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S,Cuz C        where V.surahId=S.id and C.cuzNo=V.cuzNo and V.cuzNo=?3 limit ?1 offset ?1*((?2)-1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, cuzNo]);
   }
 
@@ -1092,8 +1095,8 @@ class _$VerseDao extends VerseDao {
   Future<List<Verse>> getPagingListVerses(
       int limit, int page, int listId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over(order by LV.pos desc) rowNumber,       V.*,S.name surahName from verse V,Surah S,ListVerse LV       where V.surahId=S.id and LV.verseId=V.id and LV.listId=?3 order by LV.pos desc limit ?1 offset ?1*((?2)-1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S,ListVerse LV       where V.surahId=S.id and LV.verseId=V.id and LV.listId=?3 order by LV.pos desc limit ?1 offset ?1*((?2)-1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, listId]);
   }
 
@@ -1108,8 +1111,8 @@ class _$VerseDao extends VerseDao {
   @override
   Future<List<Verse>> getListVerses(int listId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over(order by LV.pos desc) rowNumber,       V.*,S.name surahName from verse V,Surah S,ListVerse LV       where V.surahId=S.id and LV.verseId=V.id and LV.listId=?1 order by LV.pos desc',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S,ListVerse LV       where V.surahId=S.id and LV.verseId=V.id and LV.listId=?1 order by LV.pos desc',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [listId]);
   }
 
@@ -1125,8 +1128,8 @@ class _$VerseDao extends VerseDao {
   Future<List<Verse>> getPagingSearchVersesWithRegEx(
       int limit, int page, String regExp) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S       where V.surahId=S.id and  lower(content)  REGEXP lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S       where V.surahId=S.id and  lower(content)  REGEXP lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, regExp]);
   }
 
@@ -1142,8 +1145,8 @@ class _$VerseDao extends VerseDao {
   Future<List<Verse>> getPagingSearchVerses(
       int limit, int page, String query) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by pageNo)pageRank,       row_number() over() rowNumber,       V.*,S.name surahName from verse V,Surah S       where V.surahId=S.id and  lower(content)  Like lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
-        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, pageRank: row['pageRank'] as int?, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, rowNumber: row['rowNumber'] as int?, bookId: row['bookId'] as int),
+        'select V.*,S.name surahName from verse V,Surah S       where V.surahId=S.id and  lower(content)  Like lower(?3)       limit ?1 offset ?1 * ((?2) -1)',
+        mapper: (Map<String, Object?> row) => Verse(surahId: row['surahId'] as int, cuzNo: row['cuzNo'] as int, pageNo: row['pageNo'] as int, verseNumber: row['verseNumber'] as String, content: row['content'] as String, surahName: row['surahName'] as String?, isProstrationVerse: (row['isProstrationVerse'] as int) != 0, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, query]);
   }
 
@@ -1190,8 +1193,8 @@ class _$TopicDao extends TopicDao {
   Future<List<ItemCountModel>> getHadithTopicWithSectionId(
       int sectionId) async {
     return _queryAdapter.queryList(
-        'select row_number() over(partition by T.sectionId) rowNumber,     T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT where T.id=HT.topicId and T.sectionId=?1 group by T.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT where T.id=HT.topicId and T.sectionId=?1 group by T.id',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [sectionId]);
   }
 
@@ -1200,15 +1203,15 @@ class _$TopicDao extends TopicDao {
       int sectionId, String query, String or1, String or2, String or3) async {
     return _queryAdapter.queryList(
         'select T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT where T.id=HT.topicId and T.sectionId=?1 and T.name like ?2      group by T.id order by (case when T.name=?3 then 1 when T.name like ?4 then 2 when T.name like ?5       then 3 else 4 end )',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [sectionId, query, or1, or2, or3]);
   }
 
   @override
   Future<List<ItemCountModel>> getHadithTopicWithBookId(int bookId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT,section S where T.id=HT.topicId and S.id=T.sectionId      and S.bookId=?1 group by T.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT,section S where T.id=HT.topicId and S.id=T.sectionId      and S.bookId=?1 group by T.id',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId]);
   }
 
@@ -1216,16 +1219,16 @@ class _$TopicDao extends TopicDao {
   Future<List<ItemCountModel>> getSearchHadithTopicWithBookId(
       int bookId, String query, String or1, String or2, String or3) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT,Section S where T.id=HT.topicId and S.id=T.sectionId and S.bookId=?1 and T.name like ?2      group by T.id order by (case when T.name=?3 then 1 when T.name like ?4 then 2 when T.name like ?5       then 3 else 4 end )',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select T.id,T.name,count(HT.hadithId)itemCount from      topic T,HadithTopic HT,Section S where T.id=HT.topicId and S.id=T.sectionId and S.bookId=?1 and T.name like ?2      group by T.id order by (case when T.name=?3 then 1 when T.name like ?4 then 2 when T.name like ?5       then 3 else 4 end )',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId, query, or1, or2, or3]);
   }
 
   @override
   Future<List<ItemCountModel>> getVerseTopicWithSectionId(int sectionId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT where T.id=VT.topicId and T.sectionId=?1 group by T.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT where T.id=VT.topicId and T.sectionId=?1 group by T.id',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [sectionId]);
   }
 
@@ -1234,15 +1237,15 @@ class _$TopicDao extends TopicDao {
       int sectionId, String query, String or1, String or2, String or3) async {
     return _queryAdapter.queryList(
         'select T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT where T.id=VT.topicId and T.sectionId=?1 and T.name like ?2      group by T.id order by (case when T.name=?3 then 1 when T.name like ?4 then 2 when T.name like ?5       then 3 else 4 end )',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [sectionId, query, or1, or2, or3]);
   }
 
   @override
   Future<List<ItemCountModel>> getVerseTopicWithBookId(int bookId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT,Section S where T.id=VT.topicId and      S.id=T.sectionId and S.bookId=?1 group by T.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT,Section S where T.id=VT.topicId and      S.id=T.sectionId and S.bookId=?1 group by T.id',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId]);
   }
 
@@ -1251,15 +1254,15 @@ class _$TopicDao extends TopicDao {
       int bookId, String query, String or1, String or2, String or3) async {
     return _queryAdapter.queryList(
         'select T.id,T.name,count(VT.verseId)itemCount from     topic T,VerseTopic VT,Section S where T.id=VT.topicId and S.id=T.sectionId and S.bookId=?1     and T.name like ?2      group by T.id order by (case when T.name=?3 then 1 when T.name like ?4 then 2 when T.name like ?5     then 3 else 4 end )',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId, query, or1, or2, or3]);
   }
 
   @override
   Future<List<ItemCountModel>> getSectionWithBookId(int bookId) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,S.id,S.name,count(T.id)itemCount from section S,Topic T        where S.id=T.sectionId and S.bookId=?1 group by S.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select S.id,S.name,count(T.id)itemCount from section S,Topic T        where S.id=T.sectionId and S.bookId=?1 group by S.id',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId]);
   }
 
@@ -1275,8 +1278,8 @@ class _$TopicDao extends TopicDao {
   Future<List<ItemCountModel>> getSearchSectionWithBookId(
       int bookId, String query, String or1, String or2, String or3) async {
     return _queryAdapter.queryList(
-        'select row_number() over() rowNumber,S.id,S.name,count(T.id)itemCount from section S,Topic T        where S.id=T.sectionId and S.bookId=?1 and S.name like ?2 group by S.id        order by (case when S.name=?3 then 1 when S.name like ?4 then 2 when S.name like ?5       then 3 else 4 end )',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        'select S.id,S.name,count(T.id)itemCount from section S,Topic T        where S.id=T.sectionId and S.bookId=?1 and S.name like ?2 group by S.id        order by (case when S.name=?3 then 1 when S.name like ?4 then 2 when S.name like ?5       then 3 else 4 end )',
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId, query, or1, or2, or3]);
   }
 }
@@ -1293,9 +1296,11 @@ class _$SectionDao extends SectionDao {
 
   @override
   Future<List<Section>> getSectionsWithBookId(int bookId) async {
-    return _queryAdapter.queryList(
-        'select select row_number() over() rowNumber,* from section where bookId=?1',
-        mapper: (Map<String, Object?> row) => Section(id: row['id'] as int?, name: row['name'] as String, bookId: row['bookId'] as int),
+    return _queryAdapter.queryList('select * from section where bookId=?1',
+        mapper: (Map<String, Object?> row) => Section(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            bookId: row['bookId'] as int),
         arguments: [bookId]);
   }
 
@@ -1303,7 +1308,7 @@ class _$SectionDao extends SectionDao {
   Future<List<ItemCountModel>> getSectionCountWithBookId(int bookId) async {
     return _queryAdapter.queryList(
         'select S.id,S.name,count(T.id)itemCount from     section S, Topic T where S.id=T.sectionId and S.bookId=?1 group by S.id',
-        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int, rowNumber: row['rowNumber'] as int?),
+        mapper: (Map<String, Object?> row) => ItemCountModel(id: row['id'] as int, name: row['name'] as String, itemCount: row['itemCount'] as int),
         arguments: [bookId]);
   }
 }
@@ -1314,52 +1319,52 @@ class _$SavePointDao extends SavePointDao {
         _savePointInsertionAdapter = InsertionAdapter(
             database,
             'savePoint',
-                (SavePoint item) => <String, Object?>{
-              'id': item.id,
-              'itemIndexPos': item.itemIndexPos,
-              'title': item.title,
-              'isAuto': item.isAuto ? 1 : 0,
-              'modifiedDate': item.modifiedDate,
-              'savePointType':
-              _originTagConverter.encode(item.savePointType),
-              'bookIdBinary': item.bookIdBinary,
-              'parentName': item.parentName,
-              'parentKey': item.parentKey
-            },
+            (SavePoint item) => <String, Object?>{
+                  'id': item.id,
+                  'itemIndexPos': item.itemIndexPos,
+                  'title': item.title,
+                  'isAuto': item.isAuto ? 1 : 0,
+                  'modifiedDate': item.modifiedDate,
+                  'savePointType':
+                      _originTagConverter.encode(item.savePointType),
+                  'bookIdBinary': item.bookIdBinary,
+                  'parentName': item.parentName,
+                  'parentKey': item.parentKey
+                },
             changeListener),
         _savePointUpdateAdapter = UpdateAdapter(
             database,
             'savePoint',
             ['id'],
-                (SavePoint item) => <String, Object?>{
-              'id': item.id,
-              'itemIndexPos': item.itemIndexPos,
-              'title': item.title,
-              'isAuto': item.isAuto ? 1 : 0,
-              'modifiedDate': item.modifiedDate,
-              'savePointType':
-              _originTagConverter.encode(item.savePointType),
-              'bookIdBinary': item.bookIdBinary,
-              'parentName': item.parentName,
-              'parentKey': item.parentKey
-            },
+            (SavePoint item) => <String, Object?>{
+                  'id': item.id,
+                  'itemIndexPos': item.itemIndexPos,
+                  'title': item.title,
+                  'isAuto': item.isAuto ? 1 : 0,
+                  'modifiedDate': item.modifiedDate,
+                  'savePointType':
+                      _originTagConverter.encode(item.savePointType),
+                  'bookIdBinary': item.bookIdBinary,
+                  'parentName': item.parentName,
+                  'parentKey': item.parentKey
+                },
             changeListener),
         _savePointDeletionAdapter = DeletionAdapter(
             database,
             'savePoint',
             ['id'],
-                (SavePoint item) => <String, Object?>{
-              'id': item.id,
-              'itemIndexPos': item.itemIndexPos,
-              'title': item.title,
-              'isAuto': item.isAuto ? 1 : 0,
-              'modifiedDate': item.modifiedDate,
-              'savePointType':
-              _originTagConverter.encode(item.savePointType),
-              'bookIdBinary': item.bookIdBinary,
-              'parentName': item.parentName,
-              'parentKey': item.parentKey
-            },
+            (SavePoint item) => <String, Object?>{
+                  'id': item.id,
+                  'itemIndexPos': item.itemIndexPos,
+                  'title': item.title,
+                  'isAuto': item.isAuto ? 1 : 0,
+                  'modifiedDate': item.modifiedDate,
+                  'savePointType':
+                      _originTagConverter.encode(item.savePointType),
+                  'bookIdBinary': item.bookIdBinary,
+                  'parentName': item.parentName,
+                  'parentKey': item.parentKey
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1401,7 +1406,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1420,7 +1425,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1441,7 +1446,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1463,8 +1468,8 @@ class _$SavePointDao extends SavePointDao {
   Stream<List<SavePoint>> getStreamSavePointsWithBook(List<int> bookBinaryIds) {
     const offset = 1;
     final _sqliteVariablesForBookBinaryIds =
-    Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
-        .join(',');
+        Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
+            .join(',');
     return _queryAdapter.queryListStream(
         'select * from `savepoint` where bookIdBinary in(' +
             _sqliteVariablesForBookBinaryIds +
@@ -1476,7 +1481,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1490,8 +1495,8 @@ class _$SavePointDao extends SavePointDao {
       List<int> bookBinaryIds, int savePointType) {
     const offset = 2;
     final _sqliteVariablesForBookBinaryIds =
-    Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
-        .join(',');
+        Iterable<String>.generate(bookBinaryIds.length, (i) => '?${i + offset}')
+            .join(',');
     return _queryAdapter.queryListStream(
         'select * from `savepoint` where bookIdBinary in(' +
             _sqliteVariablesForBookBinaryIds +
@@ -1503,7 +1508,7 @@ class _$SavePointDao extends SavePointDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String),
@@ -1544,34 +1549,34 @@ class _$TopicSavePointDao extends TopicSavePointDao {
         _topicSavePointEntityInsertionAdapter = InsertionAdapter(
             database,
             'topicSavePoint',
-                (TopicSavePointEntity item) => <String, Object?>{
-              'id': item.id,
-              'pos': item.pos,
-              'type': _topicSavePointConverter.encode(item.type),
-              'parentKey': item.parentKey
-            },
+            (TopicSavePointEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'pos': item.pos,
+                  'type': _topicSavePointConverter.encode(item.type),
+                  'parentKey': item.parentKey
+                },
             changeListener),
         _topicSavePointEntityUpdateAdapter = UpdateAdapter(
             database,
             'topicSavePoint',
             ['id'],
-                (TopicSavePointEntity item) => <String, Object?>{
-              'id': item.id,
-              'pos': item.pos,
-              'type': _topicSavePointConverter.encode(item.type),
-              'parentKey': item.parentKey
-            },
+            (TopicSavePointEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'pos': item.pos,
+                  'type': _topicSavePointConverter.encode(item.type),
+                  'parentKey': item.parentKey
+                },
             changeListener),
         _topicSavePointEntityDeletionAdapter = DeletionAdapter(
             database,
             'topicSavePoint',
             ['id'],
-                (TopicSavePointEntity item) => <String, Object?>{
-              'id': item.id,
-              'pos': item.pos,
-              'type': _topicSavePointConverter.encode(item.type),
-              'parentKey': item.parentKey
-            },
+            (TopicSavePointEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'pos': item.pos,
+                  'type': _topicSavePointConverter.encode(item.type),
+                  'parentKey': item.parentKey
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1581,12 +1586,12 @@ class _$TopicSavePointDao extends TopicSavePointDao {
   final QueryAdapter _queryAdapter;
 
   final InsertionAdapter<TopicSavePointEntity>
-  _topicSavePointEntityInsertionAdapter;
+      _topicSavePointEntityInsertionAdapter;
 
   final UpdateAdapter<TopicSavePointEntity> _topicSavePointEntityUpdateAdapter;
 
   final DeletionAdapter<TopicSavePointEntity>
-  _topicSavePointEntityDeletionAdapter;
+      _topicSavePointEntityDeletionAdapter;
 
   @override
   Stream<TopicSavePointEntity?> getStreamTopicSavePointEntity(
@@ -1637,34 +1642,34 @@ class _$HistoryDao extends HistoryDao {
         _historyEntityInsertionAdapter = InsertionAdapter(
             database,
             'History',
-                (HistoryEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'originType': item.originType,
-              'modifiedDate': item.modifiedDate
-            },
+            (HistoryEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'originType': item.originType,
+                  'modifiedDate': item.modifiedDate
+                },
             changeListener),
         _historyEntityUpdateAdapter = UpdateAdapter(
             database,
             'History',
             ['id'],
-                (HistoryEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'originType': item.originType,
-              'modifiedDate': item.modifiedDate
-            },
+            (HistoryEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'originType': item.originType,
+                  'modifiedDate': item.modifiedDate
+                },
             changeListener),
         _historyEntityDeletionAdapter = DeletionAdapter(
             database,
             'History',
             ['id'],
-                (HistoryEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'originType': item.originType,
-              'modifiedDate': item.modifiedDate
-            },
+            (HistoryEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'originType': item.originType,
+                  'modifiedDate': item.modifiedDate
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1736,34 +1741,34 @@ class _$BackupMetaDao extends BackupMetaDao {
         _backupMetaInsertionAdapter = InsertionAdapter(
             database,
             'BackupMeta',
-                (BackupMeta item) => <String, Object?>{
-              'id': item.id,
-              'fileName': item.fileName,
-              'updatedDate': item.updatedDate,
-              'isAuto': item.isAuto ? 1 : 0
-            },
+            (BackupMeta item) => <String, Object?>{
+                  'id': item.id,
+                  'fileName': item.fileName,
+                  'updatedDate': item.updatedDate,
+                  'isAuto': item.isAuto ? 1 : 0
+                },
             changeListener),
         _backupMetaUpdateAdapter = UpdateAdapter(
             database,
             'BackupMeta',
             ['id'],
-                (BackupMeta item) => <String, Object?>{
-              'id': item.id,
-              'fileName': item.fileName,
-              'updatedDate': item.updatedDate,
-              'isAuto': item.isAuto ? 1 : 0
-            },
+            (BackupMeta item) => <String, Object?>{
+                  'id': item.id,
+                  'fileName': item.fileName,
+                  'updatedDate': item.updatedDate,
+                  'isAuto': item.isAuto ? 1 : 0
+                },
             changeListener),
         _backupMetaDeletionAdapter = DeletionAdapter(
             database,
             'BackupMeta',
             ['id'],
-                (BackupMeta item) => <String, Object?>{
-              'id': item.id,
-              'fileName': item.fileName,
-              'updatedDate': item.updatedDate,
-              'isAuto': item.isAuto ? 1 : 0
-            },
+            (BackupMeta item) => <String, Object?>{
+                  'id': item.id,
+                  'fileName': item.fileName,
+                  'updatedDate': item.updatedDate,
+                  'isAuto': item.isAuto ? 1 : 0
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1905,68 +1910,68 @@ class _$BackupDao extends BackupDao {
         _historyEntityInsertionAdapter = InsertionAdapter(
             database,
             'History',
-                (HistoryEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'originType': item.originType,
-              'modifiedDate': item.modifiedDate
-            },
+            (HistoryEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'originType': item.originType,
+                  'modifiedDate': item.modifiedDate
+                },
             changeListener),
         _listEntityInsertionAdapter = InsertionAdapter(
             database,
             'list',
-                (ListEntity item) => <String, Object?>{
-              'id': item.id,
-              'name': item.name,
-              'isRemovable': item.isRemovable ? 1 : 0,
-              'sourceId': item.sourceId,
-              'isArchive': item.isArchive ? 1 : 0,
-              'pos': item.pos
-            },
+            (ListEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'isRemovable': item.isRemovable ? 1 : 0,
+                  'sourceId': item.sourceId,
+                  'isArchive': item.isArchive ? 1 : 0,
+                  'pos': item.pos
+                },
             changeListener),
         _listHadithEntityInsertionAdapter = InsertionAdapter(
             database,
             'listHadith',
-                (ListHadithEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'hadithId': item.hadithId,
-              'pos': item.pos
-            },
+            (ListHadithEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'hadithId': item.hadithId,
+                  'pos': item.pos
+                },
             changeListener),
         _listVerseEntityInsertionAdapter = InsertionAdapter(
             database,
             'listVerse',
-                (ListVerseEntity item) => <String, Object?>{
-              'listId': item.listId,
-              'verseId': item.verseId,
-              'pos': item.pos
-            },
+            (ListVerseEntity item) => <String, Object?>{
+                  'listId': item.listId,
+                  'verseId': item.verseId,
+                  'pos': item.pos
+                },
             changeListener),
         _savePointInsertionAdapter = InsertionAdapter(
             database,
             'savePoint',
-                (SavePoint item) => <String, Object?>{
-              'id': item.id,
-              'itemIndexPos': item.itemIndexPos,
-              'title': item.title,
-              'isAuto': item.isAuto ? 1 : 0,
-              'modifiedDate': item.modifiedDate,
-              'savePointType':
-              _originTagConverter.encode(item.savePointType),
-              'bookIdBinary': item.bookIdBinary,
-              'parentName': item.parentName,
-              'parentKey': item.parentKey
-            },
+            (SavePoint item) => <String, Object?>{
+                  'id': item.id,
+                  'itemIndexPos': item.itemIndexPos,
+                  'title': item.title,
+                  'isAuto': item.isAuto ? 1 : 0,
+                  'modifiedDate': item.modifiedDate,
+                  'savePointType':
+                      _originTagConverter.encode(item.savePointType),
+                  'bookIdBinary': item.bookIdBinary,
+                  'parentName': item.parentName,
+                  'parentKey': item.parentKey
+                },
             changeListener),
         _topicSavePointEntityInsertionAdapter = InsertionAdapter(
             database,
             'topicSavePoint',
-                (TopicSavePointEntity item) => <String, Object?>{
-              'id': item.id,
-              'pos': item.pos,
-              'type': _topicSavePointConverter.encode(item.type),
-              'parentKey': item.parentKey
-            },
+            (TopicSavePointEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'pos': item.pos,
+                  'type': _topicSavePointConverter.encode(item.type),
+                  'parentKey': item.parentKey
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -1986,7 +1991,7 @@ class _$BackupDao extends BackupDao {
   final InsertionAdapter<SavePoint> _savePointInsertionAdapter;
 
   final InsertionAdapter<TopicSavePointEntity>
-  _topicSavePointEntityInsertionAdapter;
+      _topicSavePointEntityInsertionAdapter;
 
   @override
   Future<List<HistoryEntity>> getHistories() async {
@@ -2038,7 +2043,7 @@ class _$BackupDao extends BackupDao {
             isAuto: (row['isAuto'] as int) != 0,
             modifiedDate: row['modifiedDate'] as String?,
             savePointType:
-            _originTagConverter.decode(row['savePointType'] as int),
+                _originTagConverter.decode(row['savePointType'] as int),
             bookIdBinary: row['bookIdBinary'] as int,
             parentKey: row['parentKey'] as String,
             parentName: row['parentName'] as String));
@@ -2164,31 +2169,31 @@ class _$UserInfoDao extends UserInfoDao {
         _userInfoEntityInsertionAdapter = InsertionAdapter(
             database,
             'userInfo',
-                (UserInfoEntity item) => <String, Object?>{
-              'id': item.id,
-              'userId': item.userId,
-              'img': item.img
-            },
+            (UserInfoEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userId': item.userId,
+                  'img': item.img
+                },
             changeListener),
         _userInfoEntityUpdateAdapter = UpdateAdapter(
             database,
             'userInfo',
             ['id'],
-                (UserInfoEntity item) => <String, Object?>{
-              'id': item.id,
-              'userId': item.userId,
-              'img': item.img
-            },
+            (UserInfoEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userId': item.userId,
+                  'img': item.img
+                },
             changeListener),
         _userInfoEntityDeletionAdapter = DeletionAdapter(
             database,
             'userInfo',
             ['id'],
-                (UserInfoEntity item) => <String, Object?>{
-              'id': item.id,
-              'userId': item.userId,
-              'img': item.img
-            },
+            (UserInfoEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userId': item.userId,
+                  'img': item.img
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
