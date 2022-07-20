@@ -34,7 +34,7 @@ abstract class HadithDao{
      where LH.hadithId=H.id and LH.listId=:listId""")
   Future<IntData?> getListWithHadithCount(int listId);
 
-  @Query("""select ,H.* from Hadith H,ListHadith LH
+  @Query("""select H.* from Hadith H,ListHadith LH
      where LH.hadithId=H.id and LH.listId=:listId order by
       LH.pos desc limit :limit offset :limit * ((:page) -1)
      """)

@@ -87,9 +87,6 @@ class MyApp extends StatelessWidget {
       ],
       child: MultiBlocProvider(
         providers: [
-
-          BlocProvider(
-            create: (context) => CustomPagingBloc(),),
           BlocProvider(
               create: (context) =>
                   TopicBloc(topicRepo: context.read<TopicRepo>())),

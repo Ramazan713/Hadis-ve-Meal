@@ -335,7 +335,7 @@ class _$HadithDao extends HadithDao {
   Future<List<Hadith>> getPagingListHadiths(
       int limit, int page, int listId) async {
     return _queryAdapter.queryList(
-        'select ,H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?3 order by       LH.pos desc limit ?1 offset ?1 * ((?2) -1)',
+        'select H.* from Hadith H,ListHadith LH      where LH.hadithId=H.id and LH.listId=?3 order by       LH.pos desc limit ?1 offset ?1 * ((?2) -1)',
         mapper: (Map<String, Object?> row) => Hadith(content: row['content'] as String, contentSize: row['contentSize'] as int, source: row['source'] as String, id: row['id'] as int?, bookId: row['bookId'] as int),
         arguments: [limit, page, listId]);
   }

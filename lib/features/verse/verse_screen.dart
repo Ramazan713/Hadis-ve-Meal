@@ -13,6 +13,7 @@ import 'package:hadith/constants/preference_constants.dart';
 import 'package:hadith/dialogs/show_get_number_bottom_dia.dart';
 import 'package:hadith/dialogs/show_select_font_size_bottom_dia.dart';
 import 'package:hadith/dialogs/show_select_radio_enums.dart';
+import 'package:hadith/features/paging/bloc/paging_bloc.dart';
 import 'package:hadith/features/verse/verse_bottom_menu.dart';
 import 'package:hadith/features/add_to_list/model/edit_select_list_model.dart';
 import 'package:hadith/features/add_to_list/bloc/list_bloc.dart';
@@ -171,114 +172,117 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
       lastSelectedArabicUI=ArabicVerseUIEnum.onlyMeal;
     }
 
-    return Scaffold(
-      resizeToAvoidBottomInset: kResizeToAvoidBottomInset,
-        backgroundColor: Theme.of(context).primaryColor,
-        body: SafeArea(
-          child: CustomSliverNestedView(
-            context,
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return [
-                CustomSliverAppBar(
-                  pinned: true,
-                  floating: true,
-                  snap: true,
-                  title: ValueListenableBuilder(
-                    valueListenable: changeBarTitleNotifier,
-                    builder: (context, value, child) {
-                      return Text(pagingArgument.title);
-                    },
-                  ),
-                  actions: [
-                    IconButton(onPressed: (){
+    return BlocProvider(
+      create: (context)=>CustomPagingBloc(),
+      child: Scaffold(
+        resizeToAvoidBottomInset: kResizeToAvoidBottomInset,
+          backgroundColor: Theme.of(context).primaryColor,
+          body: SafeArea(
+            child: CustomSliverNestedView(
+              context,
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return [
+                  CustomSliverAppBar(
+                    pinned: true,
+                    floating: true,
+                    snap: true,
+                    title: ValueListenableBuilder(
+                      valueListenable: changeBarTitleNotifier,
+                      builder: (context, value, child) {
+                        return Text(pagingArgument.title);
+                      },
+                    ),
+                    actions: [
+                      IconButton(onPressed: (){
 
-                      showSelectRadioEnums<ArabicVerseUIEnum>(context, currentValue:  ItemLabelModel(item: lastSelectedArabicUI, label: lastSelectedArabicUI.description),
-                          radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
-                          closeListener: (selected)async{
-                            if(selected.item!=lastSelectedArabicUI){
-                              lastSelectedArabicUI=selected.item;
-                              await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
-                              rebuildItems();
-                            }
+                        showSelectRadioEnums<ArabicVerseUIEnum>(context, currentValue:  ItemLabelModel(item: lastSelectedArabicUI, label: lastSelectedArabicUI.description),
+                            radioItems: ArabicVerseUIEnum.values.map((e) => ItemLabelModel(item: e, label: e.description)).toList(),
+                            closeListener: (selected)async{
+                              if(selected.item!=lastSelectedArabicUI){
+                                lastSelectedArabicUI=selected.item;
+                                await sharedPreferences.setInt(PrefConstants.arabicVerseAppearanceEnum.key, selected.item.index);
+                                rebuildItems();
+                              }
 
-                          });
-                    }, icon: const Icon(Icons.view_agenda),tooltip: "Görünümü Değiştir",),
-                    IconButton(
-                        onPressed: () {
-                          showGetNumberBottomDia(context, (selected) {
-                            customPagingController.setPageEvent(
-                                limitNumber: limitCount, itemIndex: selected);
-                          }, currentIndex: lastIndex, limitIndex: itemCount - 1);
-                        },
-                        icon: const Icon(Icons.map)),
-                    ValueListenableBuilder(
-                        valueListenable: rebuildItemNotifier,
-                        builder: (context, value, child) {
-                          return MenuButton<int>(
-                              items: getPopUpMenus(),
-                              selectedFunc: (selected) {
-                                _execAppBarMenus(selected);
-                              });
-                        }),
-                  ],
-                )
-              ];
-            },
-            child: BlocListener<SavePointBloc, SavePointState>(
-              listener: (context, state) {
-                if (state.status == DataStatus.success) {
-                  final itemIndex = (state.savePoint?.itemIndexPos) ?? 0;
-                  customPagingController.setPageEventWhenReady(
-                      limitNumber: limitCount, itemIndex: itemIndex);
-                }
-              },
-              child: CustomScrollingPaging<VerseModel>(
-                  customPagingController: customPagingController,
-                  loader: getLoader(),
-                  buildWhen: (prevState, nextState) {
-                    if (nextState.status == DataPagingStatus.setPagingSuccess) {
-                      itemCount = nextState.itemCount;
-                    }
-                    return true;
-                  },
-                  itemBuilder: (context, index, item, state) {
-
-                    if (item is VerseModel) {
-                      return ValueListenableBuilder(
+                            });
+                      }, icon: const Icon(Icons.view_agenda),tooltip: "Görünümü Değiştir",),
+                      IconButton(
+                          onPressed: () {
+                            showGetNumberBottomDia(context, (selected) {
+                              customPagingController.setPageEvent(
+                                  limitNumber: limitCount, itemIndex: selected);
+                            }, currentIndex: lastIndex, limitIndex: itemCount - 1);
+                          },
+                          icon: const Icon(Icons.map)),
+                      ValueListenableBuilder(
                           valueListenable: rebuildItemNotifier,
                           builder: (context, value, child) {
-                            return VerseItem(
-                              key: ObjectKey(value),
-                              rowNumber: item.rowNumber,
-                              arabicVerseUIEnum: lastSelectedArabicUI,
-                              verseModel: item,
-                              searchKey: cleanableSearchText,
-                              fontSize: state.fontSize,
-                              showRowNumber: true,
-                              searchCriteriaEnum: searchCriteriaEnum,
-                              onLongPress: () {
-                                _execShowBottomMenu(item, listBloc);
-                              },
-                            );
-                          });
-                    }
-                    return const Text("");
-                  },
-                  page: 1,
-                  isPlaceHolderActive: true,
-                  limitNumber: limitCount,
-                  placeHolderCount: 1,
-                  forwardValue: 5,
-                  minMaxListener: (minPos, maxPos, state) {
-                    lastIndex =
-                        state?.items[(minPos + maxPos) ~/ 2]?.rowNumber;
-                  },
-                  isItemLoadingWidgetPlaceHolder: true,
-                  placeHolderWidget: getVerseShimmer(context)
+                            return MenuButton<int>(
+                                items: getPopUpMenus(),
+                                selectedFunc: (selected) {
+                                  _execAppBarMenus(selected);
+                                });
+                          }),
+                    ],
+                  )
+                ];
+              },
+              child: BlocListener<SavePointBloc, SavePointState>(
+                listener: (context, state) {
+                  if (state.status == DataStatus.success) {
+                    final itemIndex = (state.savePoint?.itemIndexPos) ?? 0;
+                    customPagingController.setPageEventWhenReady(
+                        limitNumber: limitCount, itemIndex: itemIndex);
+                  }
+                },
+                child: CustomScrollingPaging(
+                    customPagingController: customPagingController,
+                    loader: getLoader(),
+                    buildWhen: (prevState, nextState) {
+                      if (nextState.status == DataPagingStatus.setPagingSuccess) {
+                        itemCount = nextState.itemCount;
+                      }
+                      return true;
+                    },
+                    itemBuilder: (context, index, item, state) {
+
+                      if (item is VerseModel) {
+                        return ValueListenableBuilder(
+                            valueListenable: rebuildItemNotifier,
+                            builder: (context, value, child) {
+                              return VerseItem(
+                                key: ObjectKey(value),
+                                rowNumber: item.rowNumber,
+                                arabicVerseUIEnum: lastSelectedArabicUI,
+                                verseModel: item,
+                                searchKey: cleanableSearchText,
+                                fontSize: state.fontSize,
+                                showRowNumber: true,
+                                searchCriteriaEnum: searchCriteriaEnum,
+                                onLongPress: () {
+                                  _execShowBottomMenu(item, listBloc);
+                                },
+                              );
+                            });
+                      }
+                      return const Text("");
+                    },
+                    page: 1,
+                    isPlaceHolderActive: true,
+                    limitNumber: limitCount,
+                    prevLoadingPlaceHolderCount: 1,
+                    forwardValue: 3,
+                    minMaxListener: (minPos, maxPos, state) {
+                      lastIndex =
+                          state?.items[(minPos + maxPos) ~/ 2]?.rowNumber;
+                    },
+                    isItemLoadingWidgetPlaceHolder: true,
+                    placeHolderWidget: getVerseShimmer(context)
+                ),
               ),
             ),
-          ),
-        ));
+          )),
+    );
   }
 
 

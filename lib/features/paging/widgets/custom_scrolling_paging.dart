@@ -9,8 +9,8 @@ import 'package:hadith/features/paging/i_paging_loader.dart';
 import 'package:hadith/features/paging/my_extractor_glow_behavior.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class CustomScrollingPaging<T> extends StatelessWidget {
-  final bool Function(CustomPagingState<dynamic>, CustomPagingState<dynamic>)?
+class CustomScrollingPaging extends StatelessWidget {
+  final bool Function(CustomPagingState, CustomPagingState)?
       buildWhen;
   final Widget Function(
           BuildContext, int index, dynamic item, CustomPagingState state)
@@ -23,7 +23,8 @@ class CustomScrollingPaging<T> extends StatelessWidget {
 
   final int limitNumber;
   final int forwardValue;
-  final int placeHolderCount;
+  late final int placeHolderCount;
+  final int prevLoadingPlaceHolderCount;
   final int page;
   final bool isPlaceHolderActive;
   final bool isItemLoadingWidgetPlaceHolder;
@@ -38,7 +39,7 @@ class CustomScrollingPaging<T> extends StatelessWidget {
       this.page = 1,
       this.limitNumber = 13,
       this.forwardValue = 1,
-      this.placeHolderCount = 1,
+        this.prevLoadingPlaceHolderCount=1,
       Widget? placeHolderWidget,
       this.isPlaceHolderActive = true,
       required this.loader,
@@ -50,6 +51,8 @@ class CustomScrollingPaging<T> extends StatelessWidget {
         const Center(child: CircularProgressIndicator());
     itemPlaceHolderWidget = isItemLoadingWidgetPlaceHolder
         ? this.placeHolderWidget : const Center(child: CircularProgressIndicator());
+
+    placeHolderCount = isPlaceHolderActive?limitNumber:1;
   }
 
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -94,12 +97,13 @@ class CustomScrollingPaging<T> extends StatelessWidget {
       itemBuilder: (context, index) {
         return placeHolderWidget;
       },
-      itemCount: 19,
+      itemCount: limitNumber,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+
     final pagingBloc = context.read<CustomPagingBloc>();
     pagingBloc.setLoader(loader, events: [PagingEventRequestInit()]);
     customPagingController.setBloc(pagingBloc);
@@ -149,53 +153,55 @@ class CustomScrollingPaging<T> extends StatelessWidget {
                 height: 0,
               );
             }),
-        BlocBuilder<CustomPagingBloc, CustomPagingState>(
+        BlocBuilder<CustomPagingBloc,CustomPagingState>(
             buildWhen: (prevState, nextState) {
-          if (nextState.items.isNotEmpty &&
-              nextState.items.first.runtimeType != T) {
-            return false;
-          }
           lastState = nextState;
           if (nextState.status == DataPagingStatus.pagingSuccess) {
             if (itemScrollController.isAttached) {
-              itemScrollController.jumpTo(index: limitNumber);
+              itemScrollController.jumpTo(index: limitNumber+min);
             }
           }
           if (nextState.status == DataPagingStatus.setPagingSuccess) {
+
             if (itemScrollController.isAttached) {
               final pos = (nextState.leftOver ?? 0);
               itemScrollController.jumpTo(
                   index: pos, alignment: nextState.items.length > 10 ? 0.5 : 0);
             }
           }
-
           return buildWhen?.call(prevState, nextState) ?? true;
         }, builder: (context, state) {
 
           // for transition between different object type(ex: Hadith=>Verse)
           //otherwise there will be incompatibility between items and give error
-          if (state.items.isNotEmpty && state.items.first.runtimeType != T) {
-            return getInitialLoadingWidget();
-          }
+          // if (state.items.isNotEmpty && state.items.first.runtimeType != T) {
+          //   return getInitialLoadingWidget();
+          // }
 
           final items = state.items;
-          int itemLen;
+          int itemLen = items.length;
           if (isPlaceHolderActive) {
-            itemLen = (state.status == DataPagingStatus.prevLoading ||
-                    state.status == DataPagingStatus.nextLoading)
-                ? items.length + placeHolderCount
-                : items.length;
-          } else {
-            itemLen = items.length;
+            if(state.status == DataPagingStatus.prevLoading){
+              itemLen += placeHolderCount;
+            }else if(state.status == DataPagingStatus.nextLoading){
+              itemLen += prevLoadingPlaceHolderCount;
+            }
           }
+
           if (itemLen == 0) {
             if (state.status == DataPagingStatus.loading) {
               return getInitialLoadingWidget();
             }
             return getEmptyWidget(context);
           }
+          //when paging is opened first time with specific index, initialIndex is assigned manually
+          // because of itemScrollController is not attached to the builder
+          int pos = state.status == DataPagingStatus.setPagingSuccess&&
+              !itemScrollController.isAttached?(state.leftOver ?? 0):0;
+
           return ScrollablePositionedList.builder(
             shrinkWrap: false,
+            initialScrollIndex: pos>0?pos-1:0,
             itemScrollController: itemScrollController,
             itemPositionsListener: itemPositionsListener,
             itemBuilder: (context, index) {
@@ -205,21 +211,21 @@ class CustomScrollingPaging<T> extends StatelessWidget {
 
               if (isPlaceHolderActive) {
                 if (state.status == DataPagingStatus.prevLoading) {
-                  if (index < placeHolderCount) {
+                  if (index < prevLoadingPlaceHolderCount) {//placeholder widgets when prevLoading happened
+                    return itemPlaceHolderWidget;
+                  }else if(itemLen-placeHolderCount+prevLoadingPlaceHolderCount<index){// limitCount-placeHolderCount times placeholder widgets loading at the end
                     return itemPlaceHolderWidget;
                   } else {
-                    index = index - placeHolderCount;
+                    index = index - prevLoadingPlaceHolderCount - 1;
                   }
-                }
-
-                if (state.status == DataPagingStatus.nextLoading &&
-                    itemLen - placeHolderCount <= index) {
+                } else if (state.status == DataPagingStatus.nextLoading &&
+                    itemLen - prevLoadingPlaceHolderCount <= index) {
                   return itemPlaceHolderWidget;
                 }
               }
 
               if ((index >= items.length - forwardValue) &&
-                  state.status != DataPagingStatus.prevLoading &&
+                  (state.status != DataPagingStatus.prevLoading) &&
                   state.isNext) {
                 pagingBloc.add(PagingEventAddNext());
               }

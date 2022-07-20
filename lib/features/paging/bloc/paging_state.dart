@@ -3,9 +3,9 @@ import 'package:hadith/constants/enums/data_paging_status_enum.dart';
 
 
 
-class CustomPagingState<T> extends Equatable{
+class CustomPagingState extends Equatable{
   final DataPagingStatus status;
-  final List<T> items;
+  final List items;
   final int prevPage;
   final int nextPage;
   final int limit;
@@ -18,9 +18,10 @@ class CustomPagingState<T> extends Equatable{
     required this.prevPage,required this.itemCount,required this.nextPage,this.leftOver,
   required this.fontSize,this.isNext=true});
 
-  CustomPagingState copyWith({DataPagingStatus? status,List<T>?items,
+  CustomPagingState copyWith({DataPagingStatus? status,List?items,
     int? limit,int? prevPage,int?nextPage,double?fontSize,
     int?itemCount,int? leftOver,bool? isNext}){
+
     return CustomPagingState(status: status??this.status, items: items??this.items,
         limit: limit??this.limit,nextPage:nextPage??this.nextPage,leftOver: leftOver??this.leftOver,
         prevPage: prevPage??this.prevPage,itemCount: itemCount??this.itemCount,isNext: isNext??this.isNext,
