@@ -18,12 +18,14 @@ class PrefConstants{
   static KeyTypeModel themeTypeEnum=KeyTypeModel<int>( key: "themeTypeEnum",defaultValue: ThemeTypesEnum.system.index);
   static KeyTypeModel counterBackupDate=const KeyTypeModel<String>( key: "counterBackupDate",defaultValue: "");
   static KeyTypeModel useArchiveListFeatures=const KeyTypeModel<bool>(key: "useArchiveListFeatures",defaultValue: false);
+  static KeyTypeModel showVerseListIcons=const KeyTypeModel<bool>(key: "showVerseListIcons",defaultValue: false);
+
   static KeyTypeModel showDownloadDiaInLogin=const KeyTypeModel<bool>(key: "showDownloadDiaInLogin", defaultValue: true);
   static KeyTypeModel arabicVerseAppearanceEnum=KeyTypeModel<int>(key: "arabicVerseAppearanceEnum", defaultValue: ArabicVerseUIEnum.both.index);
 
 
 
-  static List<KeyTypeModel>values()=>[fontSize,searchCriteriaEnum,useArchiveListFeatures,
+  static List<KeyTypeModel>values()=>[fontSize,searchCriteriaEnum,useArchiveListFeatures,showVerseListIcons,
     scopeFilterEnum,themeTypeEnum,counterBackupDate,showDownloadDiaInLogin,arabicVerseAppearanceEnum];
 
 

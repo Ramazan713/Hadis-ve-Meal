@@ -35,5 +35,8 @@ class LightModel extends IThemeModel{
   @override
   Color getGreenAccentShadeColor() => Colors.cyan.shade300;
 
+  @override
+  Color getBlueShadeColor() => Colors.blue.shade700;
+
 
 }

@@ -18,6 +18,8 @@ abstract class IThemeModel{
 
   Color getCyanShadeColor();
 
+  Color getBlueShadeColor();
+
   Color getGreenAccentShadeColor();
 
 

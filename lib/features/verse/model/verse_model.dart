@@ -6,9 +6,8 @@ class VerseModel extends IAddListCommon<Verse>{
 
   final List<VerseArabic>arabicVerses;
 
-
   VerseModel({required Verse item,required bool isFavorite,required this.arabicVerses,
-    required bool isAddListNotEmpty,required int rowNumber})
+    required bool isAddListNotEmpty,required int rowNumber,required bool isArchiveAddListNotEmpty})
       :super(isFavorite: isFavorite,isAddListNotEmpty: isAddListNotEmpty,
-      item: item,rowNumber: rowNumber);
+      item: item,rowNumber: rowNumber,isArchiveAddedToList: isArchiveAddListNotEmpty);
 }

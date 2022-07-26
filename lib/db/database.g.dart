@@ -745,6 +745,23 @@ class _$ListDao extends ListDao {
   }
 
   @override
+  Future<IntData?> verseIsAddedToList(int verseId, bool isRemovable) async {
+    return _queryAdapter.query(
+        'select exists(select 1 from listVerse LV,List L where     LV.listId=L.id and LV.verseId=?1 and L.isRemovable=?2) data',
+        mapper: (Map<String, Object?> row) => IntData(data: row['data'] as int),
+        arguments: [verseId, isRemovable ? 1 : 0]);
+  }
+
+  @override
+  Future<IntData?> verseIsAddedToListWithArchive(
+      int verseId, bool isRemovable, bool isArchive) async {
+    return _queryAdapter.query(
+        'select exists(select 1 from listVerse LV,List L where isArchive=?3 and     LV.listId=L.id and LV.verseId=?1 and L.isRemovable=?2) data',
+        mapper: (Map<String, Object?> row) => IntData(data: row['data'] as int),
+        arguments: [verseId, isRemovable ? 1 : 0, isArchive ? 1 : 0]);
+  }
+
+  @override
   Future<IntData?> getContentMaxPosFromListHadith(int listId) async {
     return _queryAdapter.query(
         'select contentMaxPos data from listHadithView where id=?1',

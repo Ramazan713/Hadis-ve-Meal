@@ -54,6 +54,8 @@ class VerseScreen extends StatefulWidget {
 class _VerseScreenState extends DisplayPageState<VerseScreen> {
 
   final SharedPreferences sharedPreferences=LocalStorage.sharedPreferences;
+  late final bool useArchiveListFeatures;
+  late final bool showListVerseIcons;
 
   ArabicVerseUIEnum lastSelectedArabicUI=ArabicVerseUIEnum.both;
 
@@ -62,6 +64,13 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
     super.initState();
     lastSelectedArabicUI=ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key)
         ??PrefConstants.arabicVerseAppearanceEnum.defaultValue];
+
+    useArchiveListFeatures = sharedPreferences
+        .getBool(PrefConstants.useArchiveListFeatures.key)??PrefConstants.useArchiveListFeatures.defaultValue;
+
+    showListVerseIcons = sharedPreferences.getBool(PrefConstants.showVerseListIcons.key)??
+        PrefConstants.showVerseListIcons.defaultValue;
+
   }
 
   void _showSavePointBottomDia(int itemIndex){
@@ -135,8 +144,23 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
           editSelectedLists(
               listParam,
               SelectVerseListLoader(
-                  context: context, verseId: item.item.id ?? 0),
-              false);
+                  context: context, verseId: item.item.id ?? 0), false,
+               changeListener: showListVerseIcons==false?null:(selectedLists){
+                final anyArchive=selectedLists.any((e) => e.isArchive);
+                final isNotEmptyList=selectedLists.isNotEmpty;
+                var isRebuild=false;
+                if(useArchiveListFeatures&&anyArchive!=item.isArchiveAddedToList){
+                  item.isArchiveAddedToList=anyArchive;
+                  isRebuild=true;
+                }
+                if(isNotEmptyList!=item.isAddListNotEmpty){
+                  item.isAddListNotEmpty=isNotEmptyList;
+                  isRebuild=true;
+                }
+                if(isRebuild){
+                  rebuildItems();
+                }
+          });
           break;
         case VerseEditEnum.copy:
           ShareUtils.copyVerseText(item.item);
@@ -257,7 +281,7 @@ class _VerseScreenState extends DisplayPageState<VerseScreen> {
                                 verseModel: item,
                                 searchKey: cleanableSearchText,
                                 fontSize: state.fontSize,
-                                showRowNumber: true,
+                                showListVerseIcons: showListVerseIcons,
                                 searchCriteriaEnum: searchCriteriaEnum,
                                 onLongPress: () {
                                   _execShowBottomMenu(item, listBloc);

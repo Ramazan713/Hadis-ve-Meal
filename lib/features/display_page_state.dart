@@ -8,6 +8,7 @@ import 'package:hadith/constants/enums/origin_tag_enum.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
 import 'package:hadith/constants/menu_resources.dart';
 import 'package:hadith/constants/save_point_constant.dart';
+import 'package:hadith/db/entities/list_entity.dart';
 import 'package:hadith/models/save_point_argument.dart';
 import 'package:hadith/utils/ad_util.dart';
 import 'package:hadith/utils/search_criteria_helper.dart';
@@ -235,20 +236,26 @@ abstract class DisplayPageState<T extends StatefulWidget> extends State<T>
   }
 
   void editSelectedLists(
-      EditSelectListModel listParam, ISelectListLoader listLoader,bool rebuildWhenChange,) {
+      EditSelectListModel listParam, ISelectListLoader listLoader,bool rebuildWhenChange,
+    {Function(List<ListEntity>)?changeListener}) {
     final bool isLoaderListPaging=listParam.loader is ListMixinLoader;
     final int? parentId=isLoaderListPaging?(listParam.loader as ListMixinLoader).listId:null;
 
     showSelectListBottomDia(context,
         listLoader: listLoader,parentListId: parentId,
-        includeFavoriteList: false, anyChange: (isChange,selectedIds) {
+        includeFavoriteList: false, anyChange: (isChange,selectedLists) {
 
           if(isChange){
-            if (isLoaderListPaging&&listParam.favoriteListId!=parentId&&!selectedIds.contains(parentId)) {
+            if (isLoaderListPaging&&listParam.favoriteListId!=parentId&&!selectedLists.map((e) => e.id).contains(parentId)) {
               reloadPagingItems(listParam.listCommon.rowNumber);
             }
 
-            listParam.listCommon.isAddListNotEmpty=selectedIds.isNotEmpty;
+            if(changeListener!=null){
+              changeListener.call(selectedLists);
+            }else{
+              listParam.listCommon.isAddListNotEmpty=selectedLists.isNotEmpty;
+            }
+
             if(rebuildWhenChange) {
               listParam.updateArea.call();
             }

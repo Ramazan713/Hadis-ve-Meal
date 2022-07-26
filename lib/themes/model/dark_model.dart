@@ -37,4 +37,7 @@ class DarkModel extends IThemeModel{
   @override
   Color getGreenAccentShadeColor() => Colors.cyan.shade900;
 
+  @override
+  Color getBlueShadeColor() => Colors.blue.shade200;
+
 }

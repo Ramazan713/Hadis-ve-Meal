@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hadith/constants/enums/data_status_enum.dart';
+import 'package:hadith/db/entities/list_entity.dart';
 import 'package:hadith/dialogs/edit_text_bottom_dia.dart';
 import 'package:hadith/dialogs/show_custom_alert_bottom_dia.dart';
 import 'package:hadith/features/add_to_list/bloc/list_bloc.dart';
@@ -14,19 +15,56 @@ import 'package:hadith/widgets/icon_text_button_side.dart';
 
 void showSelectListBottomDia(BuildContext context,
     {required ISelectListLoader listLoader, int? parentListId,
-    void Function(bool isAnyChange, List<int> selectedIds)? anyChange,
+    void Function(bool isAnyChange, List<ListEntity> selectedLists)? anyChange,
     bool includeFavoriteList = true}) async {
 
   var isAnyChange = false;
-  var selectedListIds = <int>[];
+  var selectedLists = <ListEntity>[];
   final ScrollController scrollController = ScrollController();
+  final ValueNotifier<bool>_rebuildItemsNotifier=ValueNotifier(false);
+  final bloc = context.read<ListBloc>();
+
+  void rebuildItems(){
+    _rebuildItemsNotifier.value=!_rebuildItemsNotifier.value;
+  }
 
   void callListener() {
-    anyChange?.call(isAnyChange, selectedListIds);
+    anyChange?.call(isAnyChange, selectedLists);
   }
 
   void popBack(BuildContext context) {
     Navigator.pop(context);
+  }
+
+  void addToList(ListEntity list) {
+    selectedLists.add(list);
+    bloc.add(ListEventAddToList(listId: list.id??0));
+    isAnyChange = true;
+    rebuildItems();
+  }
+
+  void removeToList(ListEntity list) {
+    selectedLists.remove(list);
+    bloc.add(ListEventRemoveToList(listId: list.id??0));
+    isAnyChange = true;
+    rebuildItems();
+  }
+
+  void editList(ListEntity list, bool isSelected) async {
+    if (isSelected) {
+      addToList(list);
+    } else {
+      if (list.id == parentListId) {
+        showCustomAlertBottomDia(context,
+            title: "Listeden kaldırmak istediğinize emin misiniz?",
+            content: "Bulunduğunuz listeyi etkileyecektir",
+            btnApproved: () {
+              removeToList(list);
+            });
+      } else {
+        removeToList(list);
+      }
+    }
   }
 
   Widget getEmptyWidget(BuildContext context) {
@@ -52,137 +90,101 @@ void showSelectListBottomDia(BuildContext context,
       isScrollControlled: true,
       context: context,
       builder: (context) {
-        var bloc = context.read<ListBloc>();
+
         bloc.setLoader(listLoader);
-        bloc.add(
-            SelectListEventRequested(includeFavoriteList: includeFavoriteList));
+        bloc.add(SelectListEventRequested(includeFavoriteList: includeFavoriteList));
 
-        return StatefulBuilder(
-          builder:
-              (BuildContext context, void Function(void Function()) setState) {
-            void addToList(int listId) {
-              setState(() {
-                selectedListIds.add(listId);
-                bloc.add(ListEventAddToList(listId: listId));
-                isAnyChange = true;
-              });
-            }
-
-            void removeToList(int listId) {
-              setState(() {
-                selectedListIds.remove(listId);
-                bloc.add(ListEventRemoveToList(listId: listId));
-                isAnyChange = true;
-              });
-            }
-
-            void editList(int listId, bool isSelected) async {
-              if (isSelected) {
-                addToList(listId);
-              } else {
-                if (listId == parentListId) {
-                  showCustomAlertBottomDia(context,
-                      title: "Listeden kaldırmak istediğinize emin misiniz?",
-                      content: "Bulunduğunuz listeyi etkileyecektir",
-                      btnApproved: () {
-                    removeToList(listId);
-                  });
-                } else {
-                  removeToList(listId);
-                }
-              }
-            }
-
-            return DraggableScrollableSheet(
-              minChildSize: 0.2,
-              expand: false,
-              builder: (context, scrollControllerDraggable) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: CustomScrollView(
-                        shrinkWrap: true,
-                        controller: scrollControllerDraggable,
-                        slivers: [
-                          SliverList(
-                            delegate: SliverChildListDelegate([
-                              const SizedBox(
-                                height: 7,
-                              ),
-                              Text(
-                                "Liste Seçin",
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline6,
-                              ),
-                              const SizedBox(
-                                height: 13,
-                              ),
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 13, vertical: 7),
-                                  child: IconTextButtonSide(
-                                    iconData: Icons.add,
-                                    title: "Liste Ekle",
-                                    onPress: () {
-                                      showEditTextBottomDia(context, (label) {
-                                        bloc.add(
-                                            ListEventFormNewList(label: label));
-                                        ToastUtils.showLongToast("Başarılı");
-                                      }, title: "Liste ismi giriniz");
-                                    },
-                                  )),
-                              BlocBuilder<ListBloc, ListState>(
-                                builder: (context, state) {
-                                  selectedListIds = state.selectedListIds;
-                                  final itemLen = state.allList.length;
-                                  if (state.status == DataStatus.loading) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-
-                                  if (itemLen == 0) {
-                                    return Center(
-                                        child: getEmptyWidget(context));
-                                  }
-
-                                  return ListView.builder(
-                                    controller: scrollController,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      var item = state.allList[index];
-                                      final isSelected =
-                                          selectedListIds.contains(item.id);
-                                      return SelectListItem(
-                                        isParentList: item.id == parentListId,
-                                        isSelected: isSelected,
-                                        item: item,
-                                        listener: (isSelected) {
-                                          editList(item.id ?? 0, isSelected);
-                                        },
-                                      );
-                                    },
-                                    itemCount: itemLen,
-                                  );
+        return DraggableScrollableSheet(
+          minChildSize: 0.2,
+          expand: false,
+          builder: (context, scrollControllerDraggable) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    controller: scrollControllerDraggable,
+                    slivers: [
+                      SliverList(
+                        delegate: SliverChildListDelegate([
+                          const SizedBox(
+                            height: 7,
+                          ),
+                          Text(
+                            "Liste Seçin",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline6,
+                          ),
+                          const SizedBox(
+                            height: 13,
+                          ),
+                          Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 13, vertical: 7),
+                              child: IconTextButtonSide(
+                                iconData: Icons.add,
+                                title: "Liste Ekle",
+                                onPress: () {
+                                  showEditTextBottomDia(context, (label) {
+                                    bloc.add(
+                                        ListEventFormNewList(label: label));
+                                    ToastUtils.showLongToast("Başarılı");
+                                  }, title: "Liste ismi giriniz");
                                 },
-                              ),
-                            ]),
-                          )
-                        ],
-                      ),
-                    ),
-                    const Divider(
-                      height: 1,
-                      color: Colors.black,
-                    ),
-                    CustomButtonPositive(onTap: () {
-                      popBack(context);
-                    }),
-                  ],
-                );
-              },
+                              )),
+                          BlocBuilder<ListBloc, ListState>(
+                            builder: (context, state) {
+                              selectedLists = state.allList.where((element) => state.selectedListIds.contains(element.id)).toList();
+                              final itemLen = state.allList.length;
+                              if (state.status == DataStatus.loading) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (itemLen == 0) {
+                                return Center(
+                                    child: getEmptyWidget(context));
+                              }
+
+                              return ListView.builder(
+                                controller: scrollController,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  var item = state.allList[index];
+
+                                  return ValueListenableBuilder(valueListenable: _rebuildItemsNotifier,
+                                      builder: (context,value,child){
+                                        final isSelected = selectedLists.contains(item);
+                                        return SelectListItem(
+                                          isParentList: item.id == parentListId,
+                                          isSelected: isSelected,
+                                          item: item,
+                                          listener: (isSelected) {
+                                            editList(item, isSelected);
+                                          },
+                                        );
+                                      });
+                                },
+                                itemCount: itemLen,
+                              );
+                            },
+                          ),
+                        ]),
+                      )
+                    ],
+                  ),
+                ),
+                const Divider(
+                  height: 1,
+                  color: Colors.black,
+                ),
+                CustomButtonPositive(onTap: () {
+                  popBack(context);
+                }),
+              ],
             );
           },
         );

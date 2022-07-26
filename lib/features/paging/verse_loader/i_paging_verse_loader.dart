@@ -38,8 +38,8 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
   Future<List<Verse>>getVerses(int limit, int page);
 
   Future<bool>_isVerseFavorite(Verse verse)async{
-    final listItems = await listRepo.getVerseListWithRemovable(verse.id??0,false);
-    return listItems.isNotEmpty;
+    final isFavorite = await listRepo.verseIsAddedToList(verse.id??0,false);
+    return (isFavorite?.data!=0);
   }
 
   Future<List<VerseArabic>>_getArabicVerses(Verse verse)async{
@@ -49,10 +49,14 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
 
   Future<bool>_isVerseAddListNotEmpty(Verse verse)async{
     final useArchiveListFeatures=_sharedPreferences.getBool(PrefConstants.useArchiveListFeatures.key)??false;
+    final isAddedToList = useArchiveListFeatures ? await listRepo.verseIsAddedToList(verse.id??0, true):
+        await listRepo.verseIsAddedToListWithArchive(verse.id??0, true, false);
+    return (isAddedToList?.data!=0);
+  }
 
-    final listItems=useArchiveListFeatures?await listRepo.getVerseListWithRemovable(verse.id??0, false):
-    await listRepo.getVerseListWithRemovableArchive(verse.id??0, true, false);
-    return listItems.isNotEmpty;
+  Future<bool>_isVerseArchiveAddListNotEmpty(Verse verse)async{
+    final isAddedToList = await listRepo.verseIsAddedToListWithArchive(verse.id??0, true, true);
+    return (isAddedToList?.data!=0);
   }
 
 
@@ -67,9 +71,10 @@ abstract class IPagingVerseLoader extends IPagingLoader<VerseModel>{
       i++;
       final isFavorite=await _isVerseFavorite(verse);
       final isAddListNotEmpty=await _isVerseAddListNotEmpty(verse);
+      final isArchiveAddListNotEmpty = await _isVerseArchiveAddListNotEmpty(verse);
       final arabicVerses = await _getArabicVerses(verse);
       verseModels.add(VerseModel(item: verse,arabicVerses: arabicVerses,
-          rowNumber: baseRowNumber+i,
+          rowNumber: baseRowNumber+i,isArchiveAddListNotEmpty:isArchiveAddListNotEmpty,
           isFavorite: isFavorite, isAddListNotEmpty: isAddListNotEmpty));
     }
     return Future.value(verseModels);

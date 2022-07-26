@@ -137,4 +137,10 @@ class ListRepo{
   Future<int> deleteVerseLists(List<ListVerseEntity> listVerseEntities)=>
       listDao.deleteVerseLists(listVerseEntities);
 
+
+  Future<IntData?>verseIsAddedToList(int verseId,bool isRemovable)=>
+      listDao.verseIsAddedToList(verseId, isRemovable);
+
+  Future<IntData?>verseIsAddedToListWithArchive(int verseId,bool isRemovable,bool isArchive)=>
+      listDao.verseIsAddedToListWithArchive(verseId, isRemovable, isArchive);
 }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hadith/constants/enums/search_criteria_enum.dart';
 import 'package:hadith/constants/enums/verse_arabic_ui_enum.dart';
 import 'package:hadith/features/verse/verse_helper_funcs.dart';
+import 'package:hadith/themes/model/i_theme_model.dart';
 import 'package:hadith/utils/text_utils.dart';
 import 'package:hadith/db/entities/verse.dart';
 import 'package:hadith/features/verse/model/verse_model.dart';
+import 'package:hadith/utils/theme_util.dart';
 
 class VerseItem extends StatelessWidget {
   final Function() onLongPress;
@@ -12,8 +14,8 @@ class VerseItem extends StatelessWidget {
   final double fontSize;
   final int rowNumber;
   final double _borderRadius = 13;
-  final bool showRowNumber;
   final String? searchKey;
+  final bool showListVerseIcons;
   final SearchCriteriaEnum searchCriteriaEnum;
   final ArabicVerseUIEnum arabicVerseUIEnum;
 
@@ -25,8 +27,8 @@ class VerseItem extends StatelessWidget {
       required this.fontSize,
       required this.arabicVerseUIEnum,
       required this.verseModel,
-      this.showRowNumber = false,
       required this.rowNumber,
+      required this.showListVerseIcons,
       this.searchKey,
       required this.searchCriteriaEnum,
       required this.onLongPress})
@@ -37,6 +39,49 @@ class VerseItem extends StatelessWidget {
   Widget getRowNumberWidget() {
     return Text("$rowNumber",
         textAlign: TextAlign.center, style: TextStyle(fontSize: fontSize - 5));
+  }
+
+  List<Widget> getListIconsWidgetList(
+      BuildContext context, double fontSize, TextStyle? style) {
+    final items = <Widget>[];
+    final IThemeModel themeModel=ThemeUtil.getThemeModel(context);
+
+    final double iconSize = fontSize - 3;
+    const opacity = 0.7;
+
+    if (verseModel.isAddListNotEmpty) {
+      items.add(Icon(
+        Icons.library_add_check,
+        size: iconSize,
+        color: style?.color?.withOpacity(opacity),
+      ));
+      items.add(const SizedBox(
+        width: 5,
+      ));
+    }
+
+    if (verseModel.isFavorite) {
+      items.add(Icon(
+        Icons.favorite,
+        color: Theme.of(context).errorColor.withOpacity(opacity),
+        size: iconSize,
+      ));
+      items.add(const SizedBox(
+        width: 5,
+      ));
+    }
+
+    if (verseModel.isArchiveAddedToList) {
+      items.add(Icon(
+        Icons.library_add_check,
+        size: iconSize,
+        color:themeModel.getBlueShadeColor().withOpacity(opacity),
+      ));
+
+    }
+
+
+    return items;
   }
 
   @override
@@ -100,6 +145,10 @@ class VerseItem extends StatelessWidget {
                       children: getVerseItemContent(content, verseModel,
                           fontSize, contentTextStyle, arabicVerseUIEnum),
                     )),
+                showListVerseIcons? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: getListIconsWidgetList(context, fontSize, contentTextStyle),
+                ):const SizedBox()
               ],
             ),
           ),

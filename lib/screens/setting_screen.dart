@@ -54,6 +54,7 @@ class _SettingScreenState extends State<SettingScreen> {
   late ValueNotifier<SearchCriteriaEnum>notifierSearchCriteria;
   late ValueNotifier<ArabicVerseUIEnum>notifierArabicUI;
 
+  late ValueNotifier<bool> notifierShowListVerseIcons;
   late ValueNotifier<bool>notifierUseArchiveListFeature;
   late ValueNotifier<String>notifierFontText;
 
@@ -81,18 +82,25 @@ class _SettingScreenState extends State<SettingScreen> {
 
   }
 
-  @override
-  void initState() {
-    listenAuth();
-    super.initState();
+  void initNotifiers(){
     notifierSearchCriteria=ValueNotifier(SearchCriteriaHelper.getCriteria());
     notifierArabicUI=ValueNotifier(ArabicVerseUIEnum.values[sharedPreferences.getInt(PrefConstants.arabicVerseAppearanceEnum.key) ??
         PrefConstants.arabicVerseAppearanceEnum.defaultValue]);
 
+    notifierShowListVerseIcons=ValueNotifier(sharedPreferences.getBool(PrefConstants.showVerseListIcons.key) ??
+        PrefConstants.showVerseListIcons.defaultValue);
     notifierUseArchiveListFeature=ValueNotifier(sharedPreferences.getBool(PrefConstants.useArchiveListFeatures.key) ??
         PrefConstants.useArchiveListFeatures.defaultValue);
     notifierFontText=ValueNotifier(FontSize.values[sharedPreferences.getInt(PrefConstants.fontSize.key) ??
         PrefConstants.fontSize.defaultValue].shortName);
+  }
+
+
+  @override
+  void initState() {
+    listenAuth();
+    super.initState();
+    initNotifiers();
   }
 
   Future _logOut(UserInfoBloc userInfoBloc )async{
@@ -389,6 +397,21 @@ class _SettingScreenState extends State<SettingScreen> {
                               }
                           ),
                         ),
+                        CustomSettingsTile(
+                          child:  ValueListenableBuilder<bool>(
+                              valueListenable: notifierShowListVerseIcons,
+                              builder: (context,showListVerseIcons,child){
+                                return  SettingsTile.switchTile(
+                                  initialValue: showListVerseIcons,
+                                  onToggle: (newValue)async{
+                                    await sharedPreferences.setBool(PrefConstants.showVerseListIcons.key,newValue);
+                                    notifierShowListVerseIcons.value=newValue;
+                                  }
+                                  , title: const Text("Ayetlerde eklenen liste simgelerini göster"),
+                                );
+                              }
+                          ),
+                        ),
 
 
                         SettingsTile(title: const Text("Varsayılan ayarlara dön"),onPressed: (context){
@@ -396,6 +419,7 @@ class _SettingScreenState extends State<SettingScreen> {
                             btnApproved: ()async{
                               await PrefConstants.setDefaultValues();
                               context.read<ThemeBloc>().add(ThemeEventChangeTheme(themeEnum: ThemeUtil.getThemeEnum()));
+                              initNotifiers();
                               setState(() {});
                             });
                         },leading: const Icon(Icons.settings_backup_restore),),

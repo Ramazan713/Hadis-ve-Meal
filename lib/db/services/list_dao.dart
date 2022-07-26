@@ -64,6 +64,15 @@ abstract class ListDao{
   Future<List<ListVerseEntity>>getVerseListWithRemovableArchive(int verseId,
       bool isRemovable,bool isArchive);
 
+  @Query("""select exists(select 1 from listVerse LV,List L where
+    LV.listId=L.id and LV.verseId=:verseId and L.isRemovable=:isRemovable) data""")
+  Future<IntData?>verseIsAddedToList(int verseId,bool isRemovable);
+
+  @Query("""select exists(select 1 from listVerse LV,List L where isArchive=:isArchive and
+    LV.listId=L.id and LV.verseId=:verseId and L.isRemovable=:isRemovable) data""")
+  Future<IntData?>verseIsAddedToListWithArchive(int verseId,
+      bool isRemovable,bool isArchive);
+
   
   @Query("""select contentMaxPos data from listHadithView where id=:listId """)
   Future<IntData?>getContentMaxPosFromListHadith(int listId);
