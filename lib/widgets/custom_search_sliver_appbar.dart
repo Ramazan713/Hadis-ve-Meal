@@ -40,7 +40,7 @@ class CustomSearchSliverAppBar {
       this.onClosed,
       this.onSubmitted,
       this.onChanged}) {
-    this.hintText = hintText ?? "Search";
+    this.hintText = hintText ?? "Ara";
   }
 
   SliverAppBar _getSearchAppBar(BuildContext context) {

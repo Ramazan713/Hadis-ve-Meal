@@ -63,7 +63,7 @@ class _HomePageState extends BottomNavWidgetState<HomePage>
                   (BuildContext context, bool innerBoxIsScrolled) {
         return [
           CustomSliverAppBar(
-            title: const Text("Hadis ve Meal"),
+            title: const Text("Hadis ve Ayet"),
             actions: [
               getSettingIcon(context),
             ],

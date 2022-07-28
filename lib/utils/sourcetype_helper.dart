@@ -33,7 +33,7 @@ class SourceTypeHelper{
     }else if(BookEnum.serlevha.bookIdBinary|BookEnum.sitte.bookIdBinary==binaryId){
       return "Hadisler";
     }else if(BookEnum.dinayetMeal.bookIdBinary==binaryId){
-      return "Meal";
+      return "Kur'an";
     }else{
       return "";
     }

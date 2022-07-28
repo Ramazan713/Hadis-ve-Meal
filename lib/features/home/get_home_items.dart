@@ -22,7 +22,7 @@ import '../verse/surah/surah_screen.dart';
 final List<String> homeTitles = [
   "Serlevha",
   "Kütübi Sitte",
-  "Meal Dinayet"
+  "Kur'an Dinayet"
 ];
 
 List<HomeBookItem>getHomeItems(BuildContext context,{required OriginTag originTag}){
