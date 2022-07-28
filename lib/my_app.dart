@@ -135,7 +135,7 @@ class MyApp extends StatelessWidget {
 
             return Phoenix(
               child: MaterialApp(
-                title: 'Hadis ve Meal',
+                title: 'Hadis ve Ayet',
                 debugShowCheckedModeBanner: false,
                 themeMode: state.themeEnum.mode,
                 theme: getLightThemeData(),

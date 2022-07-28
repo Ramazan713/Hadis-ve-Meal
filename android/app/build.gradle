@@ -61,7 +61,7 @@ android {
         applicationId "com.masterplus.hadiths"
         minSdkVersion localProperties.getProperty('flutter.minSdkVersion').toInteger()
         targetSdkVersion flutter.targetSdkVersion
-        versionCode 5
+        versionCode 6
         versionName flutterVersionName
         manifestPlaceholders  += [ADMOB_APPLICATION_ID: admobAppId]
     }

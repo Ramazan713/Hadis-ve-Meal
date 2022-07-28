@@ -19,7 +19,7 @@ abstract class ISharePdf<Y>{
     return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
-          pw.Center(child: pw.Text("Hadis ve Meal",style: style)),
+          pw.Center(child: pw.Text("Hadis ve Ayet",style: style)),
           pw.Center(child:pw.Text(getTypeName(),style: style.copyWith(fontSize: fontSize+5))),
           pw.SizedBox(height: 33)
         ]

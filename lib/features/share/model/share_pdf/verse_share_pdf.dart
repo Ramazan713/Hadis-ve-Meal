@@ -28,7 +28,7 @@ class ShareVersePDF extends ISharePdf<Verse>{
     final style=pw.TextStyle(font: font,fontSize: fontSize);
     return pw.Column(
         children: [
-          pw.Center(child:pw.Text("${item.verseNumber} - ${item.content}"
+          pw.Center(child:pw.Text(item.content
               ,style:style,textAlign: pw.TextAlign.center)),
           pw.SizedBox(height: 7),
           pw.Center(child: pw.Text("- ${item.surahId}/${item.surahName}   ${item.verseNumber}. Ayet",style: style.copyWith(fontSize: fontSize-4,fontWeight: pw.FontWeight.bold),

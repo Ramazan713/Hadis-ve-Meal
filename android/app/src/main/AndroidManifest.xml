@@ -8,7 +8,7 @@
 
 
    <application
-        android:label="Hadis ve Meal"
+        android:label="Hadis ve Ayet"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
